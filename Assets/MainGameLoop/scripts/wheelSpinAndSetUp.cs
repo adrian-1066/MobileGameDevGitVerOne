@@ -19,6 +19,9 @@ public class wheelSpinAndSetUp : MonoBehaviour
     private float totalXRotation = 0;
     private float previousXRotation = 0;
 
+    private Vector2 PreviousTouchLocation;
+    private Vector2 CurrentTouchLocation;
+
     private GameObject[] Buttons;
     // Start is called before the first frame update
     void Start()
@@ -81,9 +84,58 @@ public class wheelSpinAndSetUp : MonoBehaviour
 
     public void AddRotation(InputAction.CallbackContext context)
     {
-        totalXRotation += 30;
+        //totalXRotation += 30;
+        //previousXRotation = totalXRotation;
+        //WheelPanal.transform.Rotate(new Vector3(totalXRotation, 0, 0));
+    }
+
+    public void TouchLoc(InputAction.CallbackContext context)
+    {
+
+        if (context.canceled)
+        {
+            Debug.LogWarning("the duration of touch was: " + context.duration);
+        }
+
+        if (context.started)
+        {
+            PreviousTouchLocation = Touchscreen.current.position.ReadValue();
+            Debug.LogWarning("touch started");
+            return;
+        }
+
+        
+       
+
+        
+        //Touchscreen.current.primaryTouch.
+
+        //Debug.Log( Touchscreen.current.position.ReadValue());
+        Debug.Log("touch doing stuff");
+        float previousY = PreviousTouchLocation.y;
+        float currentY = Touchscreen.current.position.ReadValue().y;
+        float Difference = currentY - previousY;
+        Debug.Log("the touch screen difference is " + Difference);
+        CurrentTouchLocation = Touchscreen.current.position.ReadValue();
+        PreviousTouchLocation = CurrentTouchLocation;
+        totalXRotation += Difference;
         previousXRotation = totalXRotation;
-        WheelPanal.transform.Rotate(new Vector3(totalXRotation, 0, 0));
+        WheelPanal.transform.Rotate(new Vector3(Difference, 0, 0));
+
+        
+
+
+    }
+
+    public void TouchStarted(InputAction.CallbackContext context)
+    {
+        if(context.performed)
+        {
+            //PreviousTouchLocation = CurrentTouchLocation;
+        }
+          
+
+        
     }
 
     // Update is called once per frame

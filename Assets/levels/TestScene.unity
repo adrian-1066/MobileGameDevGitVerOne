@@ -1022,6 +1022,18 @@ MonoBehaviour:
     m_ActionName: Player/Fire[/Mouse/leftButton,/Device Simulator Touchscreen/primaryTouch/tap]
   - m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1928257833}
+        m_TargetAssemblyTypeName: wheelSpinAndSetUp, Assembly-CSharp
+        m_MethodName: TouchStarted
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1274365600}
         m_TargetAssemblyTypeName: PlayerControls, Assembly-CSharp
         m_MethodName: CheckScreenTopPos
@@ -1098,6 +1110,22 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: b268a126-dff1-4cc8-bf71-a055ef83dc72
     m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1928257833}
+        m_TargetAssemblyTypeName: wheelSpinAndSetUp, Assembly-CSharp
+        m_MethodName: TouchLoc
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 895d6e60-6928-458d-8da5-78ba60c138fa
+    m_ActionName: Player/DragOnScreen[/Device Simulator Touchscreen/primaryTouch]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: Touch
   m_DefaultActionMap: Player
