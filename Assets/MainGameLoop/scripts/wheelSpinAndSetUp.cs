@@ -23,7 +23,7 @@ public class wheelSpinAndSetUp : MonoBehaviour
     private Vector2 CurrentTouchLocation;
 
     private GameObject[] Buttons;
-    // Start is called before the first frame update
+  
     void Start()
     {
         Buttons = new GameObject[numOfButtons];
@@ -49,29 +49,24 @@ public class wheelSpinAndSetUp : MonoBehaviour
 
             GameObject temp = Instantiate(LevelButtonPrefab, WheelPanal.transform);
             Quaternion newRot = new Quaternion(otherAng , 0, 0, WheelPanal.transform.rotation.w);
-            Vector3 otherTempRot = new Vector3(otherAng , 0, 0);
+            Vector3 otherTempRot = new Vector3(otherAng, 0, 0);
             temp.transform.position = newPos;
             temp.transform.transform.eulerAngles = otherTempRot;
             Buttons[i] = temp;
             temp.GetComponent<wheelButtonUpdate>().UpdateText(i);
-            //temp.transform.rotation = newRot;
+
+            Debug.Log("the y pos of button " + i + " is " + (temp.transform.position.y - Canvas.transform.position.y)); 
         }
     }
 
     private void checkThenUpdateWheel()
     {
 
-        //float currentXRotation = WheelPanal.transform.localRotation.eulerAngles.x;
-        //float deltaRotation = Mathf.DeltaAngle(previousXRotation, currentXRotation); 
-        //totalXRotation += deltaRotation;
-        //previousXRotation = currentXRotation;
-
-        float wheelSetCheckTemp = (totalXRotation / 360);
-        //Debug.Log("the total x rot is " + totalXRotation);
-        //Debug.Log("total x rot / 360 is " + wheelSetCheckTemp);
        
+        float wheelSetCheckTemp = (totalXRotation / 360);
+     
         int wheelCheck = Mathf.FloorToInt(wheelSetCheckTemp);
-        //Debug.Log("num of rots is " + wheelCheck);
+        
         if (wheelCheck != wheelSet)
         {
             wheelSet = wheelCheck;
@@ -82,12 +77,7 @@ public class wheelSpinAndSetUp : MonoBehaviour
         }
     }
 
-    public void AddRotation(InputAction.CallbackContext context)
-    {
-        //totalXRotation += 30;
-        //previousXRotation = totalXRotation;
-        //WheelPanal.transform.Rotate(new Vector3(totalXRotation, 0, 0));
-    }
+
 
     public void TouchLoc(InputAction.CallbackContext context)
     {
@@ -99,9 +89,9 @@ public class wheelSpinAndSetUp : MonoBehaviour
 
         if (context.started)
         {
-            PreviousTouchLocation = Touchscreen.current.position.ReadValue();
+            //PreviousTouchLocation = Touchscreen.current.position.ReadValue();
             Debug.LogWarning("touch started");
-            return;
+            //return;
         }
 
         
@@ -118,7 +108,7 @@ public class wheelSpinAndSetUp : MonoBehaviour
         Debug.Log("the touch screen difference is " + Difference);
         CurrentTouchLocation = Touchscreen.current.position.ReadValue();
         PreviousTouchLocation = CurrentTouchLocation;
-        totalXRotation += Difference;
+        totalXRotation -= Difference;
         previousXRotation = totalXRotation;
         WheelPanal.transform.Rotate(new Vector3(Difference, 0, 0));
 
@@ -129,18 +119,48 @@ public class wheelSpinAndSetUp : MonoBehaviour
 
     public void TouchStarted(InputAction.CallbackContext context)
     {
-        if(context.performed)
-        {
-            //PreviousTouchLocation = CurrentTouchLocation;
-        }
-          
+        PreviousTouchLocation = Touchscreen.current.position.ReadValue();
 
-        
+
+
+    }
+
+    void UpdateButton()
+    {
+        for(int i = 0; i < Buttons.Length; i++)
+        {
+            float ButtonY = Buttons[i].transform.position.y;
+            float ButtonZ = Buttons[i].transform.position.z;
+            Color ButtonCol = Buttons[i].GetComponent<Image>().color;
+            if (ButtonZ > 0)
+            {
+                Buttons[i].gameObject.SetActive(false);
+                
+            }
+
+            if(ButtonZ <= 0)
+            {
+                Buttons[i].gameObject.SetActive(true);
+               
+            }
+
+            float ButtonOpa = Buttons[i].transform.position.y - Canvas.transform.position.y;
+           
+            ButtonOpa /= radius;
+
+            if(ButtonOpa < 0)
+            {
+                ButtonOpa = 0 - ButtonOpa; 
+            } 
+            ButtonOpa = 1 - ButtonOpa;
+            Buttons[i].GetComponent<Image>().color = new Color(ButtonCol.r, ButtonCol.g, ButtonCol.b, ButtonOpa);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
         checkThenUpdateWheel();
+        UpdateButton();
     }
 }
