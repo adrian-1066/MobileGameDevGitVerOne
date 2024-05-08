@@ -32,8 +32,10 @@ public class BoardSetUp : MonoBehaviour
         PrefabDims = GridWidth / 10;
 
         MatchPrefab.GetComponent<RectTransform>().rect.Set(0,0,PrefabDims,PrefabDims);
+        MatchPrefab.GetComponent<BoxCollider2D>().size = new Vector2(PrefabDims, PrefabDims);
        
         InnitGrid();
+        SpawnMatch();
 
     }
 
@@ -63,10 +65,18 @@ public class BoardSetUp : MonoBehaviour
                 if(GridList[x][y] == 1)
                 {
                     GameObject temp = Instantiate(MatchPrefab, gameObject.transform);
-                    temp.transform.position = new Vector3(BoardCanvas.transform.position.x, BoardCanvas.transform.position.x, 0);
+                    //temp.transform.position = new Vector3(0 + ((x * PrefabDims) + ((PrefabDims/10)*x)), (BoardCanvas.transform.position.y - (GridSize/2) + (y * PrefabDims)), 0);
+                    //temp.transform.localPosition = new Vector3((((x * PrefabDims) ) - (BoardWidth/2) + (PrefabDims/2)) + ((PrefabDims/10)*x) + (PrefabDims/10), (BoardCanvas.transform.position.y - (GridSize / 2) + (y * PrefabDims))- BoardHeight + ((PrefabDims/10)*y), 0);
+                    temp.transform.localPosition = new Vector3((((x * PrefabDims)) - (BoardWidth / 2) + (PrefabDims / 2)) + ((PrefabDims / 10) * x) + (PrefabDims / 10), (((y * PrefabDims)) - (BoardHeight / 4) + (PrefabDims / 2)) + ((PrefabDims / 10) * y) + (PrefabDims / 10), 0);
                     temp.GetComponent<RectTransform>().sizeDelta = new Vector2(PrefabDims, PrefabDims);
                 }
+                if (y == 0)
+                {
+                    Debug.Log(0 + ((x * PrefabDims) + ((PrefabDims / 10)*x)));
+                }
             }
+
+            
         }
     }
 

@@ -55,7 +55,7 @@ public class wheelSpinAndSetUp : MonoBehaviour
             Buttons[i] = temp;
             temp.GetComponent<wheelButtonUpdate>().UpdateText(i);
 
-            Debug.Log("the y pos of button " + i + " is " + (temp.transform.position.y - Canvas.transform.position.y)); 
+            //Debug.Log("the y pos of button " + i + " is " + (temp.transform.position.y - Canvas.transform.position.y)); 
         }
     }
 
@@ -84,13 +84,13 @@ public class wheelSpinAndSetUp : MonoBehaviour
 
         if (context.canceled)
         {
-            Debug.LogWarning("the duration of touch was: " + context.duration);
+            //Debug.LogWarning("the duration of touch was: " + context.duration);
         }
 
         if (context.started)
         {
             //PreviousTouchLocation = Touchscreen.current.position.ReadValue();
-            Debug.LogWarning("touch started");
+            //Debug.LogWarning("touch started");
             //return;
         }
 
@@ -101,11 +101,11 @@ public class wheelSpinAndSetUp : MonoBehaviour
         //Touchscreen.current.primaryTouch.
 
         //Debug.Log( Touchscreen.current.position.ReadValue());
-        Debug.Log("touch doing stuff");
+        //Debug.Log("touch doing stuff");
         float previousY = PreviousTouchLocation.y;
         float currentY = Touchscreen.current.position.ReadValue().y;
         float Difference = currentY - previousY;
-        Debug.Log("the touch screen difference is " + Difference);
+        //Debug.Log("the touch screen difference is " + Difference);
         CurrentTouchLocation = Touchscreen.current.position.ReadValue();
         PreviousTouchLocation = CurrentTouchLocation;
         totalXRotation -= Difference;
