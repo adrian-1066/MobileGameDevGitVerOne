@@ -15,11 +15,14 @@ public class BoardSetUp : MonoBehaviour
     private float GridHeight;
     [SerializeField]
     private float PrefabDims;
+    private float PrefabGap;
     private RectTransform BoardRect;
     [SerializeField]
     private int GridSize;
 
     private List<List<int>> GridList = new List<List<int>>();
+
+    private List<List<Vector2>> BoardPositions = new List<List<Vector2>>();
     private void Start()
     {
         BoardRect = BoardCanvas.GetComponent<RectTransform>();
@@ -30,7 +33,7 @@ public class BoardSetUp : MonoBehaviour
         GridHeight = GridWidth;
 
         PrefabDims = GridWidth / 10;
-
+        PrefabGap = PrefabDims / 10;
         MatchPrefab.GetComponent<RectTransform>().rect.Set(0,0,PrefabDims,PrefabDims);
         MatchPrefab.GetComponent<BoxCollider2D>().size = new Vector2(PrefabDims, PrefabDims);
        
@@ -59,21 +62,21 @@ public class BoardSetUp : MonoBehaviour
     {
         for (int x = 0; x < GridSize; x++)
         {
-            GridList.Add(new List<int>());
+            //GridList.Add(new List<int>());
+            BoardPositions.Add(new List<Vector2>());
             for (int y = 0; y < GridSize; y++)
             {
                 if(GridList[x][y] == 1)
                 {
                     GameObject temp = Instantiate(MatchPrefab, gameObject.transform);
-                    //temp.transform.position = new Vector3(0 + ((x * PrefabDims) + ((PrefabDims/10)*x)), (BoardCanvas.transform.position.y - (GridSize/2) + (y * PrefabDims)), 0);
-                    //temp.transform.localPosition = new Vector3((((x * PrefabDims) ) - (BoardWidth/2) + (PrefabDims/2)) + ((PrefabDims/10)*x) + (PrefabDims/10), (BoardCanvas.transform.position.y - (GridSize / 2) + (y * PrefabDims))- BoardHeight + ((PrefabDims/10)*y), 0);
-                    temp.transform.localPosition = new Vector3((((x * PrefabDims)) - (BoardWidth / 2) + (PrefabDims / 2)) + ((PrefabDims / 10) * x) + (PrefabDims / 10), (((y * PrefabDims)) - (BoardHeight / 4) + (PrefabDims / 2)) + ((PrefabDims / 10) * y) + (PrefabDims / 10), 0);
+                    Vector2 WorldPos = new Vector2((((x * PrefabDims)) - (BoardWidth / 2) + (PrefabDims / 2)) + (PrefabGap * x) + PrefabGap, (((y * PrefabDims)) - (BoardHeight / 4) + (PrefabDims / 2)) + (PrefabGap * y) + PrefabGap);
+                    temp.transform.localPosition = new Vector3(WorldPos.x,WorldPos.y, 0);
+                    BoardPositions[x].Add(WorldPos);
                     temp.GetComponent<RectTransform>().sizeDelta = new Vector2(PrefabDims, PrefabDims);
+                    temp.GetComponent<ObjDrag>().CurrentPosInGrid = new Vector2(x, y);
+                    temp.GetComponent<ObjDrag>().m_BoardSetup = this;
                 }
-                if (y == 0)
-                {
-                    Debug.Log(0 + ((x * PrefabDims) + ((PrefabDims / 10)*x)));
-                }
+               
             }
 
             
