@@ -11,6 +11,7 @@ public class PlayerControls : MonoBehaviour
     Vector2 CurrentTouchPos;
     List<GameObject> GridMatch = new List<GameObject>();
     private GameObject CurrentDrag;
+    private ObjDrag CurrentDragObj;
     public LayerMask GridMask;
     private int m_LayerMask = 1 << 4;
     public Camera cam;
@@ -49,6 +50,7 @@ public class PlayerControls : MonoBehaviour
                 Debug.Log("drag started");
                 isDragActive = true;
                 CurrentDrag = Hit.transform.gameObject;
+                CurrentDragObj = CurrentDrag.GetComponent<ObjDrag>();
                 //CurrentDrag.transform.position = CurrentTouchPos;
             }
             Debug.Log("screen has been pressed");
@@ -61,7 +63,8 @@ public class PlayerControls : MonoBehaviour
         CurrentTouchPos = Touchscreen.current.position.ReadValue();
         if (isDragActive == true)
         {
-            CurrentDrag.transform.position = CurrentTouchPos;
+            //CurrentDrag.transform.position = CurrentTouchPos;
+            CurrentDragObj.TempWorldPos = CurrentTouchPos;
         }
     }
 

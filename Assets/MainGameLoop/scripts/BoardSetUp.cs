@@ -58,6 +58,11 @@ public class BoardSetUp : MonoBehaviour
         }
     }
 
+    private void GetGridPos(Vector2 WorldPos)
+    {
+       
+    }
+
     private void SpawnMatch()
     {
         for (int x = 0; x < GridSize; x++)
@@ -73,8 +78,15 @@ public class BoardSetUp : MonoBehaviour
                     temp.transform.localPosition = new Vector3(WorldPos.x,WorldPos.y, 0);
                     BoardPositions[x].Add(WorldPos);
                     temp.GetComponent<RectTransform>().sizeDelta = new Vector2(PrefabDims, PrefabDims);
-                    temp.GetComponent<ObjDrag>().CurrentPosInGrid = new Vector2(x, y);
-                    temp.GetComponent<ObjDrag>().m_BoardSetup = this;
+                    ObjDrag tempObjDrag = temp.GetComponent<ObjDrag>();
+                    tempObjDrag.CurrentPosInGrid = new Vector2(x, y);
+                    tempObjDrag.TempPosInGrid = new Vector2(x, y);
+                    tempObjDrag.PrefabGap = PrefabGap;
+                    tempObjDrag.BoardWidth = BoardWidth;
+                    tempObjDrag.BoardHeight = BoardHeight;
+                    tempObjDrag.m_BoardSetup = this;
+                    tempObjDrag.TempWorldPos = WorldPos;
+                    tempObjDrag.CheckTempPos();
                 }
                
             }
