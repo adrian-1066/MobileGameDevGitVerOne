@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 5818676837953643598}
   - component: {fileID: 7454925359973792869}
   - component: {fileID: 1781968897511541069}
-  - component: {fileID: -7615066787051735568}
+  - component: {fileID: 7287915454862854391}
   m_Layer: 3
-  m_Name: MatchPrefab
+  m_Name: MatchPrefabTest 3
   m_TagString: MatchKind
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 0.8764001, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -123,7 +123,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 72, y: 72}
   m_EdgeRadius: 0
---- !u!114 &-7615066787051735568
+--- !u!114 &7287915454862854391
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -137,3 +137,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CurrentGridPos: {x: 0, y: 0}
   GridStartPos: {x: 0, y: 0}
+  type: 4

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -41,9 +40,9 @@ public class PlayerControls : MonoBehaviour
         if (context.performed == true)
         {
             CurrentTouchPos = Touchscreen.current.position.ReadValue();
-            Debug.Log("the current touch pos is: " +  CurrentTouchPos);
-            Vector2 WorldPos = cam.ScreenToWorldPoint(CurrentTouchPos);
-            Debug.Log("the world pos var is: " +  WorldPos);
+            //Debug.Log("the current touch pos is: " +  CurrentTouchPos);
+            //Vector2 WorldPos = cam.ScreenToWorldPoint(CurrentTouchPos);
+            //Debug.Log("the world pos var is: " +  WorldPos);
             RaycastHit2D Hit = Physics2D.Raycast(CurrentTouchPos, Vector2.zero);
             if(Hit.transform.gameObject.tag == "MatchKind")
             {
