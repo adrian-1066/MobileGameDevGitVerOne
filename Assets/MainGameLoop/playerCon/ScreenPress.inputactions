@@ -34,9 +34,9 @@
                 },
                 {
                     "name": "pressOnScreen",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "d8721e5f-c0a7-40a3-a46f-97a556899059",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -275,7 +275,7 @@
                 {
                     "name": "",
                     "id": "ddb0a232-9ede-40ce-9582-9019a022407c",
-                    "path": "<Touchscreen>/Press",
+                    "path": "<Touchscreen>/primaryTouch/position",
                     "interactions": "",
                     "processors": "",
                     "groups": "Touch",

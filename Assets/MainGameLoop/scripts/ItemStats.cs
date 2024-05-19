@@ -7,5 +7,6 @@ public class ItemStats : MonoBehaviour
     public Vector2Int CurrentGridPos;
     public Vector2Int GridStartPos;
     public int type;
+   public bool CanBeUsedInMatch;
    
 }
