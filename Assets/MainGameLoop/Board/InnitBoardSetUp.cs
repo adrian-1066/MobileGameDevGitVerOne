@@ -19,6 +19,7 @@ public class InnitBoardSetUp : MonoBehaviour
     public int height = 8;
     public int HiddenHeight;
     public GameObject[] items; // Array of different item prefabs
+    public Color[] ItemColours;
     public GameObject[,] grid;
     private void Awake()
     {
@@ -46,27 +47,30 @@ public class InnitBoardSetUp : MonoBehaviour
                 float XPos = (x * PrefabDims) + (GridOffset * x) + transform.position.x;
                 float YPos = (y * PrefabDims) + (GridOffset * y) + transform.position.y;
                 Vector2 position = new Vector2(XPos, YPos);
-                int itemToUse;//= Random.Range(0, items.Length);
+                int itemToUse = Random.Range(0, ItemColours.Length);
                 int oddOREven = x + y;
                 if (oddOREven % 2 == 0)
                 {
-                    itemToUse = 0;
+                    //itemToUse = 0;
                 }
                 else
                 {
-                    itemToUse = 1;
+                    //itemToUse = 1;
                 }
-                GameObject newItem = Instantiate(items[itemToUse], position, Quaternion.identity);
+                GameObject newItem = Instantiate(items[0], position, Quaternion.identity);
                 newItem.GetComponent<RectTransform>().sizeDelta = new Vector2(PrefabDims, PrefabDims);
                 newItem.GetComponent<BoxCollider2D>().size = new Vector2(PrefabDims,PrefabDims);
                 newItem.transform.parent = this.transform;
                 ItemStats newItemStats = newItem.GetComponent<ItemStats>();
                 newItemStats.CurrentGridPos = new Vector2Int(x, y);
                 newItemStats.GridStartPos = new Vector2Int(x, y);
+                newItemStats.type = itemToUse;
+                newItem.GetComponent<Image>().color = ItemColours[itemToUse];
                 newItemStats.CanBeUsedInMatch = true;
                 if(y >= height)
                 {
-                    newItem.GetComponent<Image>().color = Color.magenta;
+                    newItem.GetComponent<Image>().color = Color.clear;
+                    
                     newItemStats.CanBeUsedInMatch = false;
                 }
                 grid[x, y] = newItem;

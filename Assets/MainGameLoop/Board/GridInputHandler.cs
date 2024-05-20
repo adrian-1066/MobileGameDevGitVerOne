@@ -4,10 +4,11 @@ using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using TMPro;
 
 public class GridInputHandler : MonoBehaviour
 {
-    private InnitBoardSetUp gameBoard;
+    public InnitBoardSetUp gameBoard;
     private Vector2 initialTouchPosition;
     private Vector2 currentTouchPosition;
     private GameObject selectedItem;
@@ -22,9 +23,17 @@ public class GridInputHandler : MonoBehaviour
 
     private List<List<GameObject>> MatchsMade = new List<List<GameObject>>();
     private List<Vector2Int> ListOfItemsToPop = new List<Vector2Int>();
-    private List<GameObject> ListOfItemsToMove = new List<GameObject>();
+    public List<GameObject> ListOfItemsToMove = new List<GameObject>();
 
-    
+    public TMP_Text ScoreText;
+    private int Score;
+
+    private bool MatchInProgress;
+    public bool AbilitySelected;
+
+    public BaseAbility[] GridAbilities;
+
+    public int AbilityIndex;
     
 
     void Awake()
@@ -41,23 +50,33 @@ public class GridInputHandler : MonoBehaviour
         MatchsMade.Clear();
         MatchsMade.Add(new List<GameObject>());
         MatchsMade.Add(new List<GameObject>());
-        
+        MatchInProgress = true;
+        CheckForMatch();
+
+        for(int i = 0; i < GridAbilities.Length; i++)
+        {
+            GridAbilities[i].InputHandler = this;
+        }
+       
         //Debug.Log("matchs made num is: " + MatchsMade.Count);
     }
 
-    private void OnEnable()
+    private void UpdateScoreText()
     {
-           
-    }
-
-    private void OnDisable()
-    {
-        
+        ScoreText.text = Score.ToString();
     }
     public void OnTouchStart(InputAction.CallbackContext context)
     {
         
+        if(MatchInProgress)
+        {
+            return;
+        }
 
+        if(AbilitySelected)
+        {
+            return;
+        }
         if(Touchscreen.current.primaryTouch.press.isPressed == true)
         {
             if(!isDragging)
@@ -73,6 +92,64 @@ public class GridInputHandler : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void AbilitySelection(int index)
+    {
+        AbilityIndex = index;
+        AbilitySelected = true;
+    }
+
+    public void OnUseAbility(InputAction.CallbackContext context)
+    {
+        Debug.Log("on use ability activated");
+        if (MatchInProgress)
+        {
+            return;
+        }
+        if (AbilitySelected)
+        {
+            Vector2 touchPos = Touchscreen.current.position.ReadValue();
+            GameObject GridSquare = GetItemAtPosition(touchPos);
+            if (GridSquare != null)
+            {
+
+                GridAbilities[AbilityIndex].UseAbility(GridSquare);
+                //TempAbility(GridSquare);
+                AbilitySelected = false;
+                //use ability selected
+            }
+            else
+            {
+                Debug.Log("no grid square was chosen");
+            }
+        }
+    }
+
+    private void TempAbility(GameObject StartPoint)
+    {
+        ItemStats tempStats = StartPoint.GetComponent<ItemStats>();
+        int xAxis = tempStats.CurrentGridPos.x;
+        int yAxis = tempStats.CurrentGridPos.y;
+        ListOfItemsToMove.Add(StartPoint);
+        for(int x = 0; x < gameBoard.width; x++)
+        {
+            if(x == xAxis)
+            {
+                continue;
+            }
+            ListOfItemsToMove.Add(gameBoard.grid[x, yAxis]);
+        }
+
+        for(int y = 0; y < gameBoard.height; y++)
+        {
+            if (y == yAxis)
+            {
+                continue;
+            }
+            ListOfItemsToMove.Add(gameBoard.grid[xAxis, y]);
+        }
+        MatchMadeClear();
     }
 
     public void OnTouchMove(InputAction.CallbackContext context)
@@ -117,6 +194,7 @@ public class GridInputHandler : MonoBehaviour
                     MatchMadeClear();
                 }
                 isDragging = false;
+                selectedItem.GetComponent<Image>().color = gameBoard.ItemColours[selectedItem.GetComponent<ItemStats>().type];
                 selectedItem = null;
             }
         }
@@ -164,6 +242,10 @@ public class GridInputHandler : MonoBehaviour
             int targetY = y + (direction.y > 0 ? 1 : -1);
             if (targetY >= 0 && targetY < gameBoard.HiddenHeight)
             {
+                if (y < gameBoard.height && targetY >= gameBoard.height)
+                {
+                    UpdateItem(gameBoard.grid[x, targetY]);
+                }
                 SwapItems(x, y, x, targetY);
                 
             }
@@ -198,6 +280,10 @@ public class GridInputHandler : MonoBehaviour
             int targetY = y + (direction.y > 0 ? 1 : -1);
             if (targetY >= 0 && targetY < gameBoard.HiddenHeight)
             {
+                if(y < gameBoard.height && targetY >= gameBoard.height)
+                {
+                    UpdateItem(gameBoard.grid[x,targetY]);
+                }
                 SwapItems(x, y, x, targetY);
                 
             }
@@ -255,13 +341,22 @@ public class GridInputHandler : MonoBehaviour
 
                    
                 }
-                Debug.LogError("the num in matched made 0 is: " + MatchsMade[0].Count);
-                Debug.LogError("the num in matched made 1 is: " + MatchsMade[1].Count);
+                //Debug.LogError("the num in matched made 0 is: " + MatchsMade[0].Count);
+                //Debug.LogError("the num in matched made 1 is: " + MatchsMade[1].Count);
                 if (MatchsMade[0].Count > 2)
                 {
                     //matchmade
+                    if (MatchsMade[0].Count > 3)
+                    {
+                        GameObject temp = MatchsMade[0][0];
+                        GridAbilities[0].UseAbility(temp);
+                    }
+                    else
+                    {
 
-                    ListOfItemsToMove.AddRange(MatchsMade[0]);
+
+                        ListOfItemsToMove.AddRange(MatchsMade[0]);
+                    }
                     MatchsMade[0].Clear();
                 }
                 else
@@ -270,7 +365,17 @@ public class GridInputHandler : MonoBehaviour
                 }
                 if (MatchsMade[1].Count > 2)
                 {
-                    ListOfItemsToMove.AddRange(MatchsMade[1]);
+                    if (MatchsMade[0].Count > 3)
+                    {
+                        GameObject temp = MatchsMade[1][0];
+                        GridAbilities[1].UseAbility(temp);
+                    }
+                    else
+                    {
+
+
+                        ListOfItemsToMove.AddRange(MatchsMade[1]);
+                    }
                     MatchsMade[1].Clear();
                 }
                 else
@@ -283,25 +388,29 @@ public class GridInputHandler : MonoBehaviour
 
         if(ListOfItemsToMove.Count > 0)
         {
+            MatchMadeClear();
             return true;
         }
         return false; // Placeholder
     }
 
-    void MatchMadeClear()
+    public void MatchMadeClear()
     {
-        Debug.Log("match has been made");
+        MatchInProgress = true;
+        //Debug.Log("match has been made");
         for(int i = 0; i < ListOfItemsToMove.Count; i++)
         {
             //gameBoard.grid[ListOfItemsToPop[i].x, ListOfItemsToPop[i].y].GetComponent<Image>().color = Color.white;
-            ListOfItemsToMove[i].GetComponent<Image>().color = Color.white;
+            ListOfItemsToMove[i].GetComponent<Image>().color = Color.clear;
             //gameBoard.grid[ListOfItemsToPop[i].x, ListOfItemsToPop[i].y].GetComponent<ItemStats>().CanBeUsedInMatch = false;
             ListOfItemsToMove[i].GetComponent<ItemStats>().CanBeUsedInMatch = false;
         }
+        Score += ListOfItemsToMove.Count * 100;
+        UpdateScoreText();
         //ListOfItemsToPop.Clear();
         StartCoroutine(IE_MoveMatch());
         //ListOfItemsToMove.Clear();
-        selectedItem.GetComponent<Image>().color = Color.green;
+        //selectedItem.GetComponent<Image>().color = Color.green;
     }
 
     bool CheckAdjacentSpot(Vector2Int Spot,Vector2Int dir, int type, int matchDir)
@@ -356,20 +465,26 @@ public class GridInputHandler : MonoBehaviour
 
     IEnumerator IE_ResetPos(GameObject item)
     {
-        Debug.Log("reset timer started");
-        yield return new WaitForSeconds(1f);
+        //Debug.Log("reset timer started");
+        yield return new WaitForSeconds(0.1f);
         ResetPosition(item);
-        Debug.Log("reset timer done");
+        //Debug.Log("reset timer done");
     }
 
-    public void CheckAndMatch()
+    /*public void CheckAndMatch()
     {
         if(CheckForMatch())
         {
             MatchMadeClear();
         }
-    }
+        else
+        {
+            MatchInProgress = false;
+        }
+    }*/
 
+
+    //need this to take in own list of items that will clear them after moving
     IEnumerator IE_MoveMatch()
     {
         for(int i = 0; i < ListOfItemsToMove.Count; i++)
@@ -377,17 +492,19 @@ public class GridInputHandler : MonoBehaviour
             bool isAtTop = false;
             for(int y = 0; y < gameBoard.HiddenHeight; y++)
             {
-                Debug.Log("moving item up: " + i);
+                //Debug.Log("moving item up: " + i);
                 MoveItemsNoMatch(ListOfItemsToMove[i], Vector2.up);
-               
-                
+
+                yield return new WaitForSeconds(0.01f);
             }
            
 
-            yield return new WaitForSeconds(0.1f);
+            //yield return new WaitForSeconds(1.1f);
         }
         ListOfItemsToMove.Clear();
         UpdateGridStartPos();
+        CheckForMatch();
+        MatchInProgress = false;
     }
 
     void UpdateGridStartPos()
@@ -401,5 +518,12 @@ public class GridInputHandler : MonoBehaviour
         }
     }
 
-
+    void UpdateItem(GameObject itemToUpdate)
+    {
+        int randNum = Random.Range(0, gameBoard.ItemColours.Length);
+        itemToUpdate.GetComponent<ItemStats>().type = randNum;
+        itemToUpdate.GetComponent<ItemStats>().CanBeUsedInMatch = true;
+        itemToUpdate.GetComponent<Image>().color = gameBoard.ItemColours[randNum];
+        
+    }
 }
