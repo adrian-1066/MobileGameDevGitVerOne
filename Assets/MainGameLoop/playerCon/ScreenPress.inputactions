@@ -49,6 +49,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "wheelSpin",
+                    "type": "Button",
+                    "id": "bd3a587b-a25b-471d-91ae-f1c37ea70920",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -291,6 +300,17 @@
                     "processors": "",
                     "groups": "Touch",
                     "action": "DragOnScreen",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "11eeacfd-2abb-4641-aa9f-c3a5f72b8c4e",
+                    "path": "<Touchscreen>/Press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "wheelSpin",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

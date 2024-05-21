@@ -14,7 +14,7 @@ public class wheelSpinAndSetUp : MonoBehaviour
 
     public int numOfButtons;
     public int radius;
-    public int wheelSet;
+    public float wheelSet;
 
     private float totalXRotation = 0;
     private float previousXRotation = 0;
@@ -23,6 +23,9 @@ public class wheelSpinAndSetUp : MonoBehaviour
     private Vector2 CurrentTouchLocation;
 
     private GameObject[] Buttons;
+
+    [SerializeField]
+    private float rotationSpeed;
   
     void Start()
     {
@@ -60,48 +63,38 @@ public class wheelSpinAndSetUp : MonoBehaviour
     }
 
     private void checkThenUpdateWheel()
-    {
-
-       
+    {/*
         float wheelSetCheckTemp = (totalXRotation / 360);
-     
-        int wheelCheck = Mathf.FloorToInt(wheelSetCheckTemp);
-        
-        if (wheelCheck != wheelSet)
+        float wheelCheck = Mathf.Lerp(wheelSet, wheelSetCheckTemp, Time.deltaTime * rotationSpeed);
+
+        if (Mathf.Abs(wheelCheck - wheelSet) > 0.01f)
         {
             wheelSet = wheelCheck;
-            for(int i = 0; i < numOfButtons; i++)
+            for (int i = 0; i < numOfButtons; i++)
             {
-                Buttons[i].GetComponent<wheelButtonUpdate>().UpdateText(i + (wheelCheck*numOfButtons));
+                Buttons[i].GetComponent<wheelButtonUpdate>().UpdateText(i + (Mathf.FloorToInt(wheelCheck) * numOfButtons));
             }
-        }
+        }*/
+        
+         float wheelSetCheckTemp = (totalXRotation / 360);
+
+         int wheelCheck = Mathf.FloorToInt(wheelSetCheckTemp);
+
+         if (wheelCheck != wheelSet)
+         {
+             wheelSet = wheelCheck;
+             for(int i = 0; i < numOfButtons; i++)
+             {
+                 Buttons[i].GetComponent<wheelButtonUpdate>().UpdateText(i + (wheelCheck*numOfButtons));
+             }
+         }
     }
 
 
 
     public void TouchLoc(InputAction.CallbackContext context)
     {
-
-        if (context.canceled)
-        {
-            //Debug.LogWarning("the duration of touch was: " + context.duration);
-        }
-
-        if (context.started)
-        {
-            //PreviousTouchLocation = Touchscreen.current.position.ReadValue();
-            //Debug.LogWarning("touch started");
-            //return;
-        }
-
-        
-       
-
-        
-        //Touchscreen.current.primaryTouch.
-
-        //Debug.Log( Touchscreen.current.position.ReadValue());
-        //Debug.Log("touch doing stuff");
+        Debug.Log("wheel touch loc used");
         float previousY = PreviousTouchLocation.y;
         float currentY = Touchscreen.current.position.ReadValue().y;
         float Difference = currentY - previousY;
@@ -111,20 +104,14 @@ public class wheelSpinAndSetUp : MonoBehaviour
         totalXRotation -= Difference;
         previousXRotation = totalXRotation;
         WheelPanal.transform.Rotate(new Vector3(Difference, 0, 0));
-
-        
-
-
+        //checkThenUpdateWheel();
     }
 
     public void TouchStarted(InputAction.CallbackContext context)
     {
+        Debug.Log("wheel TouchStarted");
         PreviousTouchLocation = Touchscreen.current.position.ReadValue();
-
-
-
     }
-
     void UpdateButton()
     {
         for(int i = 0; i < Buttons.Length; i++)
