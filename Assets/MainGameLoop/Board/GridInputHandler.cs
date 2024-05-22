@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 
+
 public class GridInputHandler : MonoBehaviour
 {
     public InnitBoardSetUp gameBoard;
@@ -27,6 +28,9 @@ public class GridInputHandler : MonoBehaviour
 
     public TMP_Text ScoreText;
     private int Score;
+    public TMP_Text NumOfMoves;
+    public int BaseMoveNum;
+    public int CurrentMoveNum;
 
     private bool MatchInProgress;
     public bool AbilitySelected;
@@ -34,39 +38,78 @@ public class GridInputHandler : MonoBehaviour
     public BaseAbility[] GridAbilities;
 
     public int AbilityIndex;
+
+    public GameManager gameManager;
     
 
     void Awake()
     {
         gameBoard = GetComponent<InnitBoardSetUp>();
-        
+        CurrentDragDist = 0;
+     
     }
 
 
     private void Start()
     {
-        CurrentDragDist = 0;
-        MaxDragDist = gameBoard.GetPrefabDims();
-        MatchsMade.Clear();
-        MatchsMade.Add(new List<GameObject>());
-        MatchsMade.Add(new List<GameObject>());
-        MatchInProgress = true;
-        
+       
+    }
 
-        for(int i = 0; i < GridAbilities.Length; i++)
+    public void StartUp()
+    {
+
+        for (int i = 0; i < GridAbilities.Length; i++)
         {
             GridAbilities[i].InputHandler = this;
         }
+        gameBoard = GetComponent<InnitBoardSetUp>();
+        MaxDragDist = gameBoard.GetPrefabDims();
+        CurrentDragDist = 0;
+        MatchsMade.Add(new List<GameObject>());
+        MatchsMade.Add(new List<GameObject>());
+        MatchInProgress = true;
+        //MatchsMade.Clear();
+        CurrentMoveNum = BaseMoveNum;
+        NumOfMoves.text = CurrentMoveNum.ToString(); 
+
+
+
 
 
         CheckForMatch();
+    }
+    private void OnEnable()
+    {
+       
+    }
 
-        //Debug.Log("matchs made num is: " + MatchsMade.Count);
+    private void OnDisable()
+    {
+        gameBoard = null;
+        //MatchsMade = null;
+        MatchInProgress = false;
+        selectedItem = null;
     }
 
     private void UpdateScoreText()
     {
         ScoreText.text = Score.ToString();
+    }
+
+    private void LevelComplete()
+    {
+        Debug.Log("level complete");
+        if(gameManager.highScores.Count <= gameBoard.Seed)
+        {
+            Debug.Log("new high level reached");
+            gameManager.highScores.Add(Score);
+            gameManager.highestLevelReached = gameManager.highScores.Count;
+        }
+        else
+        {
+            Debug.Log("new highscore for this level");
+            gameManager.highScores[gameBoard.Seed] = Score;
+        }
     }
     public void OnTouchStart(InputAction.CallbackContext context)
     {
@@ -85,7 +128,7 @@ public class GridInputHandler : MonoBehaviour
             if(!isDragging)
             {
                 initialTouchPosition = Touchscreen.current.position.ReadValue(); // context.ReadValue<Vector2>();
-                                                                                 //Debug.Log("getting item");
+                                                                                 Debug.Log("getting item");
                 selectedItem = GetItemAtPosition(initialTouchPosition);
                 if (selectedItem != null)
                 {
@@ -159,7 +202,7 @@ public class GridInputHandler : MonoBehaviour
     {
         if (isDragging)
         {
-            //Debug.Log("moving square");
+            Debug.Log("moving square");
             currentTouchPosition = Touchscreen.current.position.ReadValue(); // context.ReadValue<Vector2>();
             Vector2 direction = currentTouchPosition - initialTouchPosition;
             //Debug.Log("the dir  is: " + direction);
@@ -185,7 +228,7 @@ public class GridInputHandler : MonoBehaviour
             //Debug.Log("touch ended via touchscreen");
             if(isDragging)
             {
-                //Debug.Log("touch ended");
+                Debug.Log("touch ended");
                 // Logic to check for matches and reset position if no match
                 if (!CheckForMatch())
                 {
@@ -194,6 +237,8 @@ public class GridInputHandler : MonoBehaviour
                 }
                 else
                 {
+                    CurrentMoveNum--;
+                    UpdateMoveNum();
                     MatchMadeClear();
                 }
                 isDragging = false;
@@ -203,6 +248,11 @@ public class GridInputHandler : MonoBehaviour
         }
     }
 
+
+    private void UpdateMoveNum()
+    {
+        NumOfMoves.text = CurrentMoveNum.ToString();
+    }
     GameObject GetItemAtPosition(Vector2 position)
     {
         Vector2 worldPosition = Camera.main.ScreenToWorldPoint(position);
@@ -417,6 +467,12 @@ public class GridInputHandler : MonoBehaviour
         }
         Score += ListOfItemsToMove.Count * 100;
         UpdateScoreText();
+
+        if(Score >= gameBoard.ScoreNeeded)
+        {
+            //end level
+            LevelComplete();
+        }
         //ListOfItemsToPop.Clear();
         List<GameObject> temp = new List<GameObject>();
         temp.AddRange(ListOfItemsToMove);

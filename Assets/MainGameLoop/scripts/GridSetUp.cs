@@ -7,13 +7,26 @@ public class GridSetUp : MonoBehaviour
     public GameObject GridObj;
 
     public int GridSize;
+
+    public int SeedBaseVal = 0;
     // Start is called before the first frame update
     void Start()
     {
         SpawnGrid();
     }
 
-   private void SpawnGrid()
+    private void OnEnable()
+    {
+        
+        //SpawnGrid();
+    }
+
+    private void OnDisable()
+    {
+        
+    }
+
+    private void SpawnGrid()
     {
         for(int i = 0; i < GridSize; i++)
         {
@@ -24,6 +37,8 @@ public class GridSetUp : MonoBehaviour
             }
         }
     }
+
+    
 
     // Update is called once per frame
     void Update()

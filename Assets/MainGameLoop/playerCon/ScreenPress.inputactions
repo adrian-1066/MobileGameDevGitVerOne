@@ -52,8 +52,17 @@
                 },
                 {
                     "name": "wheelSpin",
-                    "type": "Button",
+                    "type": "Value",
                     "id": "bd3a587b-a25b-471d-91ae-f1c37ea70920",
+                    "expectedControlType": "Touch",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "innitWheel",
+                    "type": "Button",
+                    "id": "86532f25-d200-45b7-8f8f-84007ec299df",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -306,11 +315,22 @@
                 {
                     "name": "",
                     "id": "11eeacfd-2abb-4641-aa9f-c3a5f72b8c4e",
-                    "path": "<Touchscreen>/Press",
+                    "path": "<Touchscreen>/primaryTouch",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "wheelSpin",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "88428bd8-5766-4e58-984a-0df4016b697a",
+                    "path": "<Touchscreen>/Press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "innitWheel",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

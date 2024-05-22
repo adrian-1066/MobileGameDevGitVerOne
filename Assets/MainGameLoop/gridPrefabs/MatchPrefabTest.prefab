@@ -68,7 +68,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: cc7f88bd409c30346a4fa0034f735ffb, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -138,3 +138,4 @@ MonoBehaviour:
   CurrentGridPos: {x: 0, y: 0}
   GridStartPos: {x: 0, y: 0}
   type: 1
+  CanBeUsedInMatch: 0

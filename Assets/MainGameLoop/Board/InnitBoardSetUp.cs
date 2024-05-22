@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class InnitBoardSetUp : MonoBehaviour
 {
@@ -21,6 +22,12 @@ public class InnitBoardSetUp : MonoBehaviour
     public GameObject[] items; // Array of different item prefabs
     public Color[] ItemColours;
     public GameObject[,] grid;
+    public int Seed;
+    public TMP_Text ScoreToReachText;
+    public int ScoreNeeded;
+    
+    //public GameManager manager;
+    
     private void Awake()
     {
         BoardRect = BoardCanvas.GetComponent<RectTransform>();
@@ -29,17 +36,40 @@ public class InnitBoardSetUp : MonoBehaviour
         PrefabDims = BoardWidth / (width + 1);
         GridOffset = (PrefabDims / (width + 1));
         HiddenHeight = height * 2;
+        transform.position = new Vector3(transform.position.x + (PrefabDims / 2) + GridOffset, transform.position.y, transform.position.z);
+        grid = new GameObject[width, HiddenHeight];
+        //Seed = 0;
     }
     void Start()
     {
         
-        transform.position = new Vector3(transform.position.x + (PrefabDims/2) + GridOffset, transform.position.y, transform.position.z);
-        grid = new GameObject[width, HiddenHeight];
+       
+        
+    }
+
+    private void OnEnable()
+    {
+
         PopulateGrid();
+        SetScoreAndMoves();
+        GetComponent<GridInputHandler>().StartUp();
+    }
+
+    private void OnDisable()
+    {
+        ClearGrid();
+    }
+
+    void SetScoreAndMoves()
+    {
+        ScoreNeeded = ((Seed + 1) * 10) * 100;
+        ScoreToReachText.text = ScoreNeeded.ToString();
+
     }
 
     void PopulateGrid()
     {
+        Random.InitState(Seed);
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < HiddenHeight; y++)
@@ -75,6 +105,19 @@ public class InnitBoardSetUp : MonoBehaviour
                 }
                 grid[x, y] = newItem;
                 
+            }
+        }
+        
+    }
+
+    private void ClearGrid()
+    {
+        for(int x = 0; x < width; x++)
+        {
+            for(int y = 0; y < HiddenHeight; y++)
+            {
+                GameObject.Destroy(grid[x, y]);
+                grid[x, y] = null;
             }
         }
     }
