@@ -21,9 +21,9 @@ public class wheelButtonUpdate : MonoBehaviour
         {
 
 
-            if (valueOnText < gameManager.highScores.Count && valueOnText >= 0)
+            if (valueOnText - 1 < gameManager.highScores.Count && valueOnText > 0)
             {
-                ScoreVal = gameManager.highScores[valueOnText];
+                ScoreVal = gameManager.highScores[valueOnText -1];
                 ScoreText.text = ScoreVal.ToString();
             }
             else

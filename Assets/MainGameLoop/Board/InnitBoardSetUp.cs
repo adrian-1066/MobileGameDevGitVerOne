@@ -25,6 +25,8 @@ public class InnitBoardSetUp : MonoBehaviour
     public int Seed;
     public TMP_Text ScoreToReachText;
     public int ScoreNeeded;
+
+    
     
     //public GameManager manager;
     

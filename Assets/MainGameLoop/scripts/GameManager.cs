@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public int highestLevelReached;
     SaveLoadManager saveLoadManager;
     GameData dataToSave;
+    public WheelSpinAndSetUp wheelSetUp;
 
 
     private void Awake()
@@ -17,11 +18,11 @@ public class GameManager : MonoBehaviour
         saveLoadManager = GetComponent<SaveLoadManager>();
     }
 
-    private void OnApplicationQuit()
+    private void OnEnable()
     {
-        Debug.Log("gaming quitting");
-        SaveTheGame();
+        
     }
+
 
     private void Start()
     {
@@ -59,12 +60,22 @@ public class GameManager : MonoBehaviour
     }
 
    
-
+    public void SetWheelToCurrentLevel(int level)
+    {
+        Debug.Log("setting wheel from game manager");
+        wheelSetUp.SetWheelToLevel(level);
+    }
     private void Update()
     {
         float current = 0;
         current = Time.frameCount / Time.time;
         avgFrameRate = (int)current;
         //Debug.Log("the avg framerate is: " +  avgFrameRate);
+    }
+
+    private void OnApplicationQuit()
+    {
+        Debug.Log("gaming quitting");
+        SaveTheGame();
     }
 }

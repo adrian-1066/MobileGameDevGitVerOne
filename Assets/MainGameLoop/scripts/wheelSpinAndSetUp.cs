@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -32,6 +33,9 @@ public class WheelSpinAndSetUp : MonoBehaviour
         buttons = new GameObject[numOfButtons];
         isDragging = false;
         SpawnPrefabs();
+        UpdateButtonVisibility();
+        SetWheelToLevel(10);
+        
     }
 
     private void SpawnPrefabs()
@@ -57,10 +61,11 @@ public class WheelSpinAndSetUp : MonoBehaviour
             temp.transform.transform.eulerAngles = otherTempRot;
             buttons[i] = temp;
             wheelButtonUpdate wheelUpdateComp = temp.GetComponent<wheelButtonUpdate>();
-            wheelUpdateComp.UpdateText(i);
+            
             wheelUpdateComp.gameManager = manager;
             wheelUpdateComp.GameBoard = GameBaord;
             wheelUpdateComp.WheelScene = WheelScene;
+            wheelUpdateComp.UpdateText(i);
 
             //Debug.Log("the y pos of button " + i + " is " + (temp.transform.position.y - Canvas.transform.position.y)); 
         }
@@ -81,6 +86,67 @@ public class WheelSpinAndSetUp : MonoBehaviour
         }*/
     }
 
+    public void SetWheelToLevel(int level)
+    {
+        Debug.Log("setting wheel to level");
+        List<int> buttonsThatAreActive = new List<int>();
+        List<GameObject> ActiveButtonsRef = new List<GameObject>();
+        GameObject MostForwardButtonRef = buttons[0];
+        int activeButtons = 0;
+        float forwardZ = 0;
+        int mostForwardButton = 0;
+        for (int i = 0; i < numOfButtons; i++)
+        {
+            if (buttons[i].activeSelf)
+            {
+                activeButtons++;
+                buttonsThatAreActive.Add(i);
+                ActiveButtonsRef.Add(buttons[i]);
+                if (buttons[i].transform.localPosition.z >= forwardZ)
+                {
+                    mostForwardButton = i;
+                    forwardZ = buttons[i].transform.localPosition.z;
+                    MostForwardButtonRef = buttons[i].gameObject;
+                }
+            }
+        }
+        foreach(GameObject go in ActiveButtonsRef)
+        {
+            ActiveButtonsRef = ActiveButtonsRef.OrderBy(go => go.transform.localPosition.y).ToList();
+        }
+
+        //Debug.Log("there are: " + ActiveButtonsRef.Count + " in the active buttons");
+       
+
+        for(int i = 0; i < ActiveButtonsRef.Count; i++)
+        {
+            if (ActiveButtonsRef[i] ==  MostForwardButtonRef)
+            {
+                mostForwardButton = i;
+                break;
+            }
+        }
+        Debug.Log("the most forward button is: " + MostForwardButtonRef);
+        //MostForwardButtonRef.transform.position = Vector3.zero;
+        for(int i = mostForwardButton; i < ActiveButtonsRef.Count; i++)
+        {
+            int diff = i - mostForwardButton;
+            ActiveButtonsRef[i].GetComponent<wheelButtonUpdate>().UpdateText(level + diff);
+        }
+
+        for(int i = mostForwardButton; i >= 0; i--)
+        {
+            int diff = i - mostForwardButton;
+            ActiveButtonsRef[i].GetComponent<wheelButtonUpdate>().UpdateText(level + diff);
+        }
+
+
+
+
+
+       
+    }
+
     private void UpdateWheel()
     {
         float degreesPerButton = 360f / numOfButtons;
@@ -97,13 +163,7 @@ public class WheelSpinAndSetUp : MonoBehaviour
             }
 
 
-            /*if (!buttons[i].activeSelf)
-            {
-
-
-                int levelNumber = baseButtonIndex + i;
-                buttons[i].GetComponent<wheelButtonUpdate>().UpdateText(levelNumber);
-            }*/
+           
         }
 
         for(int i = 0; i < buttonsThatAreActive.Count; i++)
@@ -133,17 +193,15 @@ public class WheelSpinAndSetUp : MonoBehaviour
 
         }
 
+        for(int i = 0; i < numOfButtons; i++)
+        {
+            wheelButtonUpdate tempWheelStat = buttons[i].GetComponent<wheelButtonUpdate>();
+            tempWheelStat.UpdateText(tempWheelStat.valueOnText);
+        }
+
         
 
-        /*
-        float wheelRotationInRevolutions = totalXRotation / 360f;
-        int wheelSet = Mathf.FloorToInt(wheelRotationInRevolutions);
-
-        for (int i = 0; i < numOfButtons; i++)
-        {
-            int levelNumber = i + (wheelSet * numOfButtons);
-            buttons[i].GetComponent<wheelButtonUpdate>().UpdateText(levelNumber);
-        }*/
+     
     }
 
     public void TouchLoc(InputAction.CallbackContext context)
@@ -193,6 +251,11 @@ public class WheelSpinAndSetUp : MonoBehaviour
             float buttonZ = button.transform.position.z;
             button.SetActive(buttonZ <= 0);
 
+            if(button.GetComponent<wheelButtonUpdate>().valueOnText <= 0)
+            {
+                button.SetActive(false);
+            }
+
             float buttonOpacity = Mathf.Clamp01(1 - Mathf.Abs(button.transform.position.y - Canvas.transform.position.y) / radius);
             var image = button.GetComponent<Image>();
             if (image != null)
@@ -206,159 +269,7 @@ public class WheelSpinAndSetUp : MonoBehaviour
     void Update()
     {
         UpdateButtonVisibility();
+        
     }
 }
 
-/*using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.UI;
-
-
-public class wheelSpinAndSetUp : MonoBehaviour
-{
-    public GameObject WheelPanal;
-    public GameObject Canvas;
-
-    public GameObject LevelButtonPrefab;
-
-    public int numOfButtons;
-    public int radius;
-    public float wheelSet;
-
-    private float totalXRotation = 0;
-    private float previousXRotation = 0;
-
-    private Vector2 PreviousTouchLocation;
-    private Vector2 CurrentTouchLocation;
-
-    private GameObject[] Buttons;
-
-    [SerializeField]
-    private float rotationSpeed;
-  
-    void Start()
-    {
-        Buttons = new GameObject[numOfButtons];
-        SpawnPrefabs();
-        
-    }
-
-    private void SpawnPrefabs()
-    {
-        float tempCheck = (WheelPanal.transform.rotation.x / 360);
-        wheelSet = Mathf.FloorToInt(tempCheck);
-        Vector3 PrefabRotation = new Vector3(0.0f, 0.0f, 0.0f);
-        for(int i = 0; i < numOfButtons; i++)
-        {
-            float angle = (i+1) * Mathf.PI * 2 / numOfButtons;
-            float otherAng = (360 / numOfButtons) * (i+1);
-            otherAng += 90;
-            Debug.Log(otherAng);
-            Vector3 newPos = new Vector3(0, Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
-            newPos.x = Canvas.transform.position.x;
-            newPos.y += Canvas.transform.position.y;
-            newPos.z -= 200;
-
-            GameObject temp = Instantiate(LevelButtonPrefab, WheelPanal.transform);
-            Quaternion newRot = new Quaternion(otherAng , 0, 0, WheelPanal.transform.rotation.w);
-            Vector3 otherTempRot = new Vector3(otherAng, 0, 0);
-            temp.transform.position = newPos;
-            temp.transform.transform.eulerAngles = otherTempRot;
-            Buttons[i] = temp;
-            temp.GetComponent<wheelButtonUpdate>().UpdateText(i);
-
-            //Debug.Log("the y pos of button " + i + " is " + (temp.transform.position.y - Canvas.transform.position.y)); 
-        }
-    }
-
-    private void checkThenUpdateWheel()
-    {
-        float wheelSetCheckTemp = (totalXRotation / 360);
-        float wheelCheck = Mathf.Lerp(wheelSet, wheelSetCheckTemp, Time.deltaTime * rotationSpeed);
-
-        if (Mathf.Abs(wheelCheck - wheelSet) > 0.01f)
-        {
-            wheelSet = wheelCheck;
-            for (int i = 0; i < numOfButtons; i++)
-            {
-                Buttons[i].GetComponent<wheelButtonUpdate>().UpdateText(i + (Mathf.FloorToInt(wheelCheck) * numOfButtons));
-            }
-        }
-        
-         float wheelSetCheckTemp = (totalXRotation / 360);
-
-         int wheelCheck = Mathf.FloorToInt(wheelSetCheckTemp);
-
-         if (wheelCheck != wheelSet)
-         {
-             wheelSet = wheelCheck;
-             for(int i = 0; i < numOfButtons; i++)
-             {
-                 Buttons[i].GetComponent<wheelButtonUpdate>().UpdateText(i + (wheelCheck*numOfButtons));
-             }
-         }
-    }
-
-
-
-    public void TouchLoc(InputAction.CallbackContext context)
-    {
-        Debug.Log("wheel touch loc used");
-        float previousY = PreviousTouchLocation.y;
-        float currentY = Touchscreen.current.position.ReadValue().y;
-        float Difference = currentY - previousY;
-        //Debug.Log("the touch screen difference is " + Difference);
-        CurrentTouchLocation = Touchscreen.current.position.ReadValue();
-        PreviousTouchLocation = CurrentTouchLocation;
-        totalXRotation -= Difference;
-        previousXRotation = totalXRotation;
-        WheelPanal.transform.Rotate(new Vector3(Difference, 0, 0));
-        //checkThenUpdateWheel();
-    }
-
-    public void TouchStarted(InputAction.CallbackContext context)
-    {
-        Debug.Log("wheel TouchStarted");
-        PreviousTouchLocation = Touchscreen.current.position.ReadValue();
-    }
-    void UpdateButton()
-    {
-        for(int i = 0; i < Buttons.Length; i++)
-        {
-            float ButtonY = Buttons[i].transform.position.y;
-            float ButtonZ = Buttons[i].transform.position.z;
-            Color ButtonCol = Buttons[i].GetComponent<Image>().color;
-            if (ButtonZ > 0)
-            {
-                Buttons[i].gameObject.SetActive(false);
-                
-            }
-
-            if(ButtonZ <= 0)
-            {
-                Buttons[i].gameObject.SetActive(true);
-               
-            }
-
-            float ButtonOpa = Buttons[i].transform.position.y - Canvas.transform.position.y;
-           
-            ButtonOpa /= radius;
-
-            if(ButtonOpa < 0)
-            {
-                ButtonOpa = 0 - ButtonOpa; 
-            } 
-            ButtonOpa = 1 - ButtonOpa;
-            Buttons[i].GetComponent<Image>().color = new Color(ButtonCol.r, ButtonCol.g, ButtonCol.b, ButtonOpa);
-        }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        checkThenUpdateWheel();
-        UpdateButton();
-    }
-}*/

@@ -28,6 +28,8 @@ public class GridInputHandler : MonoBehaviour
 
     public TMP_Text ScoreText;
     private int Score;
+
+    bool IsLevelComplete;
     public TMP_Text NumOfMoves;
     public int BaseMoveNum;
     public int CurrentMoveNum;
@@ -40,7 +42,9 @@ public class GridInputHandler : MonoBehaviour
     public int AbilityIndex;
 
     public GameManager gameManager;
-    
+
+    public GameObject LevelCompleteScreen;
+    public TMP_Text ScoreCompleteVal;
 
     void Awake()
     {
@@ -62,6 +66,7 @@ public class GridInputHandler : MonoBehaviour
         {
             GridAbilities[i].InputHandler = this;
         }
+        IsLevelComplete = false;
         gameBoard = GetComponent<InnitBoardSetUp>();
         MaxDragDist = gameBoard.GetPrefabDims();
         CurrentDragDist = 0;
@@ -70,8 +75,8 @@ public class GridInputHandler : MonoBehaviour
         MatchInProgress = true;
         //MatchsMade.Clear();
         CurrentMoveNum = BaseMoveNum;
-        NumOfMoves.text = CurrentMoveNum.ToString(); 
-
+        NumOfMoves.text = CurrentMoveNum.ToString();
+        LevelCompleteScreen.SetActive(false);
 
 
 
@@ -80,7 +85,7 @@ public class GridInputHandler : MonoBehaviour
     }
     private void OnEnable()
     {
-       
+        LevelCompleteScreen.SetActive(false);
     }
 
     private void OnDisable()
@@ -89,6 +94,9 @@ public class GridInputHandler : MonoBehaviour
         //MatchsMade = null;
         MatchInProgress = false;
         selectedItem = null;
+        Score = 0;
+        ScoreText.text = Score.ToString();
+        IsLevelComplete = false;
     }
 
     private void UpdateScoreText()
@@ -99,20 +107,35 @@ public class GridInputHandler : MonoBehaviour
     private void LevelComplete()
     {
         Debug.Log("level complete");
-        if(gameManager.highScores.Count <= gameBoard.Seed)
+        if(gameManager.highScores.Count -1 < gameBoard.Seed - 1)
         {
             Debug.Log("new high level reached");
             gameManager.highScores.Add(Score);
-            gameManager.highestLevelReached = gameManager.highScores.Count;
+            gameManager.highestLevelReached = gameManager.highScores.Count - 1;
         }
         else
         {
             Debug.Log("new highscore for this level");
-            gameManager.highScores[gameBoard.Seed] = Score;
+            gameManager.highScores[gameBoard.Seed - 1] = Score;
         }
+        IsLevelComplete = true;
+        LevelCompleteScreen.SetActive(true);
+        ScoreCompleteVal.text = Score.ToString();
+    }
+
+    public void TriggerChangeOnWheel()
+    {
+        Debug.Log("seed Sending is: " + gameBoard.Seed);
+        gameManager.SetWheelToCurrentLevel(gameBoard.Seed);
+        
     }
     public void OnTouchStart(InputAction.CallbackContext context)
     {
+
+        if(IsLevelComplete)
+        {
+            return;
+        }
         
         if(MatchInProgress)
         {
@@ -128,7 +151,7 @@ public class GridInputHandler : MonoBehaviour
             if(!isDragging)
             {
                 initialTouchPosition = Touchscreen.current.position.ReadValue(); // context.ReadValue<Vector2>();
-                                                                                 Debug.Log("getting item");
+                                                                                 //Debug.Log("getting item");
                 selectedItem = GetItemAtPosition(initialTouchPosition);
                 if (selectedItem != null)
                 {
@@ -171,38 +194,11 @@ public class GridInputHandler : MonoBehaviour
             }
         }
     }
-
-    private void TempAbility(GameObject StartPoint)
-    {
-        ItemStats tempStats = StartPoint.GetComponent<ItemStats>();
-        int xAxis = tempStats.CurrentGridPos.x;
-        int yAxis = tempStats.CurrentGridPos.y;
-        ListOfItemsToMove.Add(StartPoint);
-        for(int x = 0; x < gameBoard.width; x++)
-        {
-            if(x == xAxis)
-            {
-                continue;
-            }
-            ListOfItemsToMove.Add(gameBoard.grid[x, yAxis]);
-        }
-
-        for(int y = 0; y < gameBoard.height; y++)
-        {
-            if (y == yAxis)
-            {
-                continue;
-            }
-            ListOfItemsToMove.Add(gameBoard.grid[xAxis, y]);
-        }
-        MatchMadeClear();
-    }
-
     public void OnTouchMove(InputAction.CallbackContext context)
     {
         if (isDragging)
         {
-            Debug.Log("moving square");
+            //Debug.Log("moving square");
             currentTouchPosition = Touchscreen.current.position.ReadValue(); // context.ReadValue<Vector2>();
             Vector2 direction = currentTouchPosition - initialTouchPosition;
             //Debug.Log("the dir  is: " + direction);
@@ -228,7 +224,7 @@ public class GridInputHandler : MonoBehaviour
             //Debug.Log("touch ended via touchscreen");
             if(isDragging)
             {
-                Debug.Log("touch ended");
+                //Debug.Log("touch ended");
                 // Logic to check for matches and reset position if no match
                 if (!CheckForMatch())
                 {
@@ -449,7 +445,18 @@ public class GridInputHandler : MonoBehaviour
         if(ListOfItemsToMove.Count > 0)
         {
             MatchMadeClear();
+            
             return true;
+        }
+
+        if (Score >= gameBoard.ScoreNeeded)
+        {
+            //end level
+            if (!MatchInProgress)
+            {
+                LevelComplete();
+            }
+
         }
         return false; // Placeholder
     }
@@ -468,11 +475,15 @@ public class GridInputHandler : MonoBehaviour
         Score += ListOfItemsToMove.Count * 100;
         UpdateScoreText();
 
-        if(Score >= gameBoard.ScoreNeeded)
-        {
-            //end level
-            LevelComplete();
-        }
+        //if(Score >= gameBoard.ScoreNeeded)
+        //{
+        //    //end level
+        //    if(!MatchInProgress)
+        //    {
+        //        LevelComplete();
+        //    }
+           
+        //}
         //ListOfItemsToPop.Clear();
         List<GameObject> temp = new List<GameObject>();
         temp.AddRange(ListOfItemsToMove);
