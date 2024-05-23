@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
     private DateTime dateTimeOnLogOn;
     private DateTime timeOfLastAd;
 
-
+    
 #if UNITY_ANDROID
     private string _adUnitId = "ca-app-pub-3940256099942544/1033173712";
 #endif
@@ -112,12 +112,12 @@ public class GameManager : MonoBehaviour
         Debug.Log(loadedData.HighestLevel);
 
         UpdateNums();
-
-       LoadInterstitialAd();
+        
+        LoadInterstitialAd();
         ShowInterstitialAd();
-
+        
     }
-
+    
     public void LoadInterstitialAd()
     {
         if(_interstitialAd != null)
@@ -160,7 +160,7 @@ public class GameManager : MonoBehaviour
             Debug.LogError("Interstitial ad is not ready yet.");
         }
     }
-
+    
 
     public void CheckIfTimeToPlayAd()
     {
