@@ -34,7 +34,7 @@ public class WheelSpinAndSetUp : MonoBehaviour
         isDragging = false;
         SpawnPrefabs();
         UpdateButtonVisibility();
-        SetWheelToLevel(10);
+        SetWheelToLevel(manager.highestLevelReached);
         
     }
 
@@ -88,7 +88,7 @@ public class WheelSpinAndSetUp : MonoBehaviour
 
     public void SetWheelToLevel(int level)
     {
-        Debug.Log("setting wheel to level");
+        Debug.Log("setting wheel to level: " + level);
         List<int> buttonsThatAreActive = new List<int>();
         List<GameObject> ActiveButtonsRef = new List<GameObject>();
         GameObject MostForwardButtonRef = buttons[0];
@@ -97,22 +97,22 @@ public class WheelSpinAndSetUp : MonoBehaviour
         int mostForwardButton = 0;
         for (int i = 0; i < numOfButtons; i++)
         {
-            if (buttons[i].activeSelf)
+            if (buttons[i].transform.position.z <= 0)
             {
                 activeButtons++;
                 buttonsThatAreActive.Add(i);
                 ActiveButtonsRef.Add(buttons[i]);
-                if (buttons[i].transform.localPosition.z >= forwardZ)
+                if (buttons[i].transform.position.z <= forwardZ)
                 {
                     mostForwardButton = i;
-                    forwardZ = buttons[i].transform.localPosition.z;
+                    forwardZ = buttons[i].transform.position.z;
                     MostForwardButtonRef = buttons[i].gameObject;
                 }
             }
         }
         foreach(GameObject go in ActiveButtonsRef)
         {
-            ActiveButtonsRef = ActiveButtonsRef.OrderBy(go => go.transform.localPosition.y).ToList();
+            ActiveButtonsRef = ActiveButtonsRef.OrderBy(go => go.transform.position.y).ToList();
         }
 
         //Debug.Log("there are: " + ActiveButtonsRef.Count + " in the active buttons");
@@ -131,14 +131,17 @@ public class WheelSpinAndSetUp : MonoBehaviour
         for(int i = mostForwardButton; i < ActiveButtonsRef.Count; i++)
         {
             int diff = i - mostForwardButton;
+            Debug.Log("the diff for above is: " +  diff); 
             ActiveButtonsRef[i].GetComponent<wheelButtonUpdate>().UpdateText(level + diff);
         }
 
         for(int i = mostForwardButton; i >= 0; i--)
         {
             int diff = i - mostForwardButton;
+            Debug.Log("the diff for below is: " + diff);
             ActiveButtonsRef[i].GetComponent<wheelButtonUpdate>().UpdateText(level + diff);
         }
+        Debug.Log("the forward button is: " + MostForwardButtonRef.GetComponent<wheelButtonUpdate>().valueOnText.ToString());
 
 
 
@@ -206,6 +209,12 @@ public class WheelSpinAndSetUp : MonoBehaviour
 
     public void TouchLoc(InputAction.CallbackContext context)
     {
+        if(!gameObject.activeSelf)
+        {
+            Debug.Log("gameboj not active going back now, bye bye");
+            return;
+        }
+
         if (isDragging)
         {
             //Debug.Log("is touching wheel my guy");
@@ -222,6 +231,11 @@ public class WheelSpinAndSetUp : MonoBehaviour
 
     public void TouchStarted(InputAction.CallbackContext context)
     {
+
+        if (!gameObject.activeSelf)
+        {
+            return;
+        }
         if (Touchscreen.current.primaryTouch.press.isPressed == true)
         {
             if (!isDragging)
@@ -234,6 +248,11 @@ public class WheelSpinAndSetUp : MonoBehaviour
 
     public void OnTouchEnd(InputAction.CallbackContext context)
     {
+
+        if (!gameObject.activeSelf)
+        {
+            return;
+        }
         if (Touchscreen.current.primaryTouch.press.isPressed == false)
         {
             if (isDragging)

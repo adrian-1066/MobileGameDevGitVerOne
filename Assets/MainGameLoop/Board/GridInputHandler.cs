@@ -46,6 +46,8 @@ public class GridInputHandler : MonoBehaviour
     public GameObject LevelCompleteScreen;
     public TMP_Text ScoreCompleteVal;
 
+    public int CurrentLevelMultiplier;
+
     void Awake()
     {
         gameBoard = GetComponent<InnitBoardSetUp>();
@@ -77,7 +79,7 @@ public class GridInputHandler : MonoBehaviour
         CurrentMoveNum = BaseMoveNum;
         NumOfMoves.text = CurrentMoveNum.ToString();
         LevelCompleteScreen.SetActive(false);
-
+        CurrentLevelMultiplier = gameManager.levelMulti;
 
 
 
@@ -118,6 +120,8 @@ public class GridInputHandler : MonoBehaviour
             Debug.Log("new highscore for this level");
             gameManager.highScores[gameBoard.Seed - 1] = Score;
         }
+        gameManager.curFreeMoney += Mathf.RoundToInt(Score / 100);
+        gameManager.UpdateNums();
         IsLevelComplete = true;
         LevelCompleteScreen.SetActive(true);
         ScoreCompleteVal.text = Score.ToString();
@@ -472,7 +476,7 @@ public class GridInputHandler : MonoBehaviour
             //gameBoard.grid[ListOfItemsToPop[i].x, ListOfItemsToPop[i].y].GetComponent<ItemStats>().CanBeUsedInMatch = false;
             ListOfItemsToMove[i].GetComponent<ItemStats>().CanBeUsedInMatch = false;
         }
-        Score += ListOfItemsToMove.Count * 100;
+        Score += (ListOfItemsToMove.Count * CurrentLevelMultiplier);
         UpdateScoreText();
 
         //if(Score >= gameBoard.ScoreNeeded)

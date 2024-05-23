@@ -6,10 +6,15 @@ using UnityEngine;
 public class GameData 
 {
     public int HighestLevel;
+    public int MultiLevel;
+    public int FreeMoney;
+    public int PreMoney;
+    public int NumOfAbilityOne;
+    public int NumOfAbilityTwo;
     public List<int> LevelHighScores;
     public GameData()
     {
         LevelHighScores = new List<int>();
-        HighestLevel = 0;
+        
     }
 }
