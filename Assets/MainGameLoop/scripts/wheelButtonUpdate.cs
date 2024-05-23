@@ -36,8 +36,11 @@ public class wheelButtonUpdate : MonoBehaviour
 
     public void OpenLevel()
     {
-        gameManager.SetSeedForGrid(valueOnText);
-        GameBoard.SetActive(true);
-        WheelScene.SetActive(false);
+        if (valueOnText <= gameManager.highestLevelReached + 2)
+        {
+            gameManager.SetSeedForGrid(valueOnText);
+            GameBoard.SetActive(true);
+            WheelScene.SetActive(false);
+        }
     }
 }

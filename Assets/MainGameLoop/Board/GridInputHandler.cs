@@ -45,12 +45,16 @@ public class GridInputHandler : MonoBehaviour
 
     public GameObject LevelCompleteScreen;
     public TMP_Text ScoreCompleteVal;
+    public TMP_Text LevelStateText;
 
     public int CurrentLevelMultiplier;
 
     public TMP_Text Ability1AmountText;
     public TMP_Text Ability2AmountText;
 
+
+    private bool isHorizontalMove;
+    private bool directionSet;
     void Awake()
     {
         gameBoard = GetComponent<InnitBoardSetUp>();
@@ -130,6 +134,7 @@ public class GridInputHandler : MonoBehaviour
         IsLevelComplete = true;
         LevelCompleteScreen.SetActive(true);
         ScoreCompleteVal.text = Score.ToString();
+        LevelStateText.text = "Level Complete";
     }
 
     public void TriggerChangeOnWheel()
@@ -140,38 +145,27 @@ public class GridInputHandler : MonoBehaviour
     }
     public void OnTouchStart(InputAction.CallbackContext context)
     {
-
-        if(IsLevelComplete)
-        {
-            return;
-        }
-        
-        if(MatchInProgress)
+        if (IsLevelComplete || MatchInProgress || AbilitySelected)
         {
             return;
         }
 
-        if(AbilitySelected)
+        if (Touchscreen.current.primaryTouch.press.isPressed)
         {
-            return;
-        }
-        if(Touchscreen.current.primaryTouch.press.isPressed == true)
-        {
-            if(!isDragging)
+            if (!isDragging)
             {
-                initialTouchPosition = Touchscreen.current.position.ReadValue(); // context.ReadValue<Vector2>();
-                                                                                 //Debug.Log("getting item");
+                initialTouchPosition = Touchscreen.current.position.ReadValue();
                 selectedItem = GetItemAtPosition(initialTouchPosition);
                 if (selectedItem != null)
                 {
-                    //Debug.Log("touch started");
                     selectedItem.GetComponent<Image>().color = Color.green;
                     isDragging = true;
+                    directionSet = false;  // Reset direction flag
                 }
             }
         }
     }
-
+    
     public void AbilitySelection(int index)
     {
         if(index == 0)
@@ -245,38 +239,49 @@ public class GridInputHandler : MonoBehaviour
     {
         if (isDragging)
         {
-            //Debug.Log("moving square");
-            currentTouchPosition = Touchscreen.current.position.ReadValue(); // context.ReadValue<Vector2>();
+            currentTouchPosition = Touchscreen.current.position.ReadValue();
             Vector2 direction = currentTouchPosition - initialTouchPosition;
-            //Debug.Log("the dir  is: " + direction);
             float dist = Vector2.Distance(initialTouchPosition, currentTouchPosition);
             initialTouchPosition = currentTouchPosition;
             CurrentDragDist += dist;
-            //Debug.Log("dist is: " + dist);
+
             if (CurrentDragDist >= MaxDragDist)
             {
-                //Debug.Log("CurrentDragdist is: " +  CurrentDragDist);   
                 CurrentDragDist = 0;
-                // Move items here based on direction
+
+                if (!directionSet) // Determine initial direction on first significant move
+                {
+                    isHorizontalMove = Mathf.Abs(direction.x) > Mathf.Abs(direction.y);
+                    directionSet = true;
+                }
+
+                // Restrict movement to the determined direction
+                if (directionSet)
+                {
+                    if (isHorizontalMove)
+                    {
+                        direction = new Vector2(direction.x, 0);
+                    }
+                    else
+                    {
+                        direction = new Vector2(0, direction.y);
+                    }
+                }
+
                 MoveItems(selectedItem, direction);
             }
         }
     }
-
+   
     public void OnTouchEnd(InputAction.CallbackContext context)
     {
-        
-        if(Touchscreen.current.primaryTouch.press.isPressed == false)
+        if (!Touchscreen.current.primaryTouch.press.isPressed)
         {
-            //Debug.Log("touch ended via touchscreen");
-            if(isDragging)
+            if (isDragging)
             {
-                //Debug.Log("touch ended");
-                // Logic to check for matches and reset position if no match
                 if (!CheckForMatch())
                 {
                     StartCoroutine(IE_ResetPos(selectedItem));
-                    // ResetPosition(selectedItem);
                 }
                 else
                 {
@@ -284,7 +289,7 @@ public class GridInputHandler : MonoBehaviour
                     UpdateMoveNum();
                     MatchMadeClear();
 
-                    if(CurrentMoveNum <= 0)
+                    if (CurrentMoveNum <= 0)
                     {
                         LoseGame();
                     }
@@ -292,16 +297,21 @@ public class GridInputHandler : MonoBehaviour
                 isDragging = false;
                 selectedItem.GetComponent<Image>().color = gameBoard.ItemColours[selectedItem.GetComponent<ItemStats>().type];
                 selectedItem = null;
+                isHorizontalMove = false;
+                directionSet = false; // Reset direction flag for next drag
             }
         }
     }
-
-
     private void LoseGame()
     {
         IsLevelComplete = true;
+        LevelCompleteScreen.SetActive(true);
+        ScoreCompleteVal.text = Score.ToString();
+        LevelStateText.text = "Level Failed!!!";
+        gameManager.curFreeMoney += Mathf.RoundToInt((Score / 100)/2);
         gameManager.AmountOfLife--;
         gameManager.TriggerHealthRegen();
+        gameManager.UpdateNums();
     }
 
     private void UpdateMoveNum()
@@ -331,22 +341,19 @@ public class GridInputHandler : MonoBehaviour
         ItemStats stats = item.GetComponent<ItemStats>();
         int x = stats.CurrentGridPos.x;
         int y = stats.CurrentGridPos.y;
-        //Debug.Log("the dir is: " + direction);
-        if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
+
+        if (isHorizontalMove)
         {
             // Horizontal move
-            //Debug.Log("moving on x");
             int targetX = x + (direction.x > 0 ? 1 : -1);
             if (targetX >= 0 && targetX < gameBoard.width)
             {
                 SwapItems(x, y, targetX, y);
-               
             }
         }
-        else if(Mathf.Abs(direction.x) < Mathf.Abs(direction.y))
+        else
         {
             // Vertical move
-            //Debug.Log("moving on y");
             int targetY = y + (direction.y > 0 ? 1 : -1);
             if (targetY >= 0 && targetY < gameBoard.HiddenHeight)
             {
@@ -355,54 +362,41 @@ public class GridInputHandler : MonoBehaviour
                     UpdateItem(gameBoard.grid[x, targetY]);
                 }
                 SwapItems(x, y, x, targetY);
-                
             }
         }
-        else
-        {
-            Debug.Log("get fucked");
-        }
     }
-
+   
     void MoveItemsNoMatch(GameObject item, Vector2 direction)
     {
         ItemStats stats = item.GetComponent<ItemStats>();
         int x = stats.CurrentGridPos.x;
         int y = stats.CurrentGridPos.y;
-        //Debug.Log("the dir is: " + direction);
-        if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
+
+        if (isHorizontalMove)
         {
             // Horizontal move
-            //Debug.Log("moving on x");
             int targetX = x + (direction.x > 0 ? 1 : -1);
             if (targetX >= 0 && targetX < gameBoard.width)
             {
                 SwapItems(x, y, targetX, y);
-                
-            }
-        }
-        else if (Mathf.Abs(direction.x) < Mathf.Abs(direction.y))
-        {
-            // Vertical move
-            //Debug.Log("moving on y");
-            int targetY = y + (direction.y > 0 ? 1 : -1);
-            if (targetY >= 0 && targetY < gameBoard.HiddenHeight)
-            {
-                if(y < gameBoard.height && targetY >= gameBoard.height)
-                {
-                    UpdateItem(gameBoard.grid[x,targetY]);
-                    MakeItemInvis(gameBoard.grid[x,y]);
-                }
-                SwapItems(x, y, x, targetY);
-                
             }
         }
         else
         {
-            Debug.Log("get fucked");
+            // Vertical move
+            int targetY = y + (direction.y > 0 ? 1 : -1);
+            if (targetY >= 0 && targetY < gameBoard.HiddenHeight)
+            {
+                if (y < gameBoard.height && targetY >= gameBoard.height)
+                {
+                    UpdateItem(gameBoard.grid[x, targetY]);
+                    MakeItemInvis(gameBoard.grid[x, y]);
+                }
+                SwapItems(x, y, x, targetY);
+            }
         }
     }
-
+    
     void SwapItems(int x1, int y1, int x2, int y2)
     {
         GameObject temp = gameBoard.grid[x1, y1];
@@ -534,22 +528,12 @@ public class GridInputHandler : MonoBehaviour
         Score += (ListOfItemsToMove.Count * CurrentLevelMultiplier);
         UpdateScoreText();
 
-        //if(Score >= gameBoard.ScoreNeeded)
-        //{
-        //    //end level
-        //    if(!MatchInProgress)
-        //    {
-        //        LevelComplete();
-        //    }
-           
-        //}
-        //ListOfItemsToPop.Clear();
+    
         List<GameObject> temp = new List<GameObject>();
         temp.AddRange(ListOfItemsToMove);
         ListOfItemsToMove.Clear();
         StartCoroutine(IE_MoveMatch(temp));
-        //ListOfItemsToMove.Clear();
-        //selectedItem.GetComponent<Image>().color = Color.green;
+        
     }
 
     bool CheckAdjacentSpot(Vector2Int Spot,Vector2Int dir, int type, int matchDir)
@@ -610,20 +594,10 @@ public class GridInputHandler : MonoBehaviour
         //Debug.Log("reset timer done");
     }
 
-    /*public void CheckAndMatch()
-    {
-        if(CheckForMatch())
-        {
-            MatchMadeClear();
-        }
-        else
-        {
-            MatchInProgress = false;
-        }
-    }*/
+ 
 
 
-    //need this to take in own list of items that will clear them after moving
+  
     IEnumerator IE_MoveMatch(List<GameObject> itemsToMove)
     {
         for(int i = 0; i < itemsToMove.Count; i++)

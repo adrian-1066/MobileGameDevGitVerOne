@@ -47,9 +47,9 @@ public class GameManager : MonoBehaviour
     private DateTime timeOfLastAd;
 
     
-#if UNITY_ANDROID
+//#if UNITY_ANDROID
     private string _adUnitId = "ca-app-pub-3940256099942544/1033173712";
-#endif
+//#endif
 
     private InterstitialAd _interstitialAd;
     private void Awake()

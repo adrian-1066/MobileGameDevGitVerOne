@@ -27,6 +27,18 @@ public class SaveLoadManager : MonoBehaviour
             string json = File.ReadAllText(filePath);
             return JsonUtility.FromJson<GameData>(json);
         }
-        return new GameData();
+        return NewFileData();
+    }
+
+    GameData NewFileData()
+    {
+        GameData newData;
+        newData = new GameData 
+        {
+            NumOfAbilityOne = 5, NumOfAbilityTwo = 5, FreeMoney = 1000, NumOfLifes = 5, PreMoney = 100, MultiLevel = 10
+        
+        };
+
+        return newData;
     }
 }
