@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using System.Runtime.CompilerServices;
+using GoogleMobileAds.Api;
 using System;
 
 public class GameManager : MonoBehaviour
@@ -43,6 +44,14 @@ public class GameManager : MonoBehaviour
     public int AmountOfLife;
     public int MaxAmountOfLife;
     private DateTime dateTimeOnLogOn;
+    private DateTime timeOfLastAd;
+
+
+#if UNITY_ANDROID
+    private string _adUnitId = "ca-app-pub-3940256099942544/1033173712";
+#endif
+
+    private InterstitialAd _interstitialAd;
     private void Awake()
     {
         saveLoadManager = GetComponent<SaveLoadManager>();
@@ -56,8 +65,10 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        MobileAds.Initialize(initStatus => { });
 
 
+        
         GameData loadedData = saveLoadManager.LoadGame();
         highScores.AddRange(loadedData.LevelHighScores);
         highestLevelReached = loadedData.HighestLevel;
@@ -67,6 +78,7 @@ public class GameManager : MonoBehaviour
         AmountOfAbility1 = loadedData.NumOfAbilityOne;
         AmountOfAbility2 = loadedData.NumOfAbilityTwo;
         AmountOfLife = loadedData.NumOfLifes;
+        //timeOfLastAd = loadedData.TimeSinceLastAd;
         //dateTimeOnLogOn = loadedData.dateTimeAtLogOff;
 
         if(DateTime.TryParse(loadedData.dateTimeAtLogOffData, out dateTimeOnLogOn))
@@ -77,7 +89,17 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("failed to get date time");
         }
-        if(AmountOfLife != MaxAmountOfLife)
+
+        if (DateTime.TryParse(loadedData.TimeSinceLastAd, out timeOfLastAd))
+        {
+            Debug.Log("got the previous ad time, it is: " + timeOfLastAd);
+        }
+        else
+        {
+            Debug.Log("failed to get ad date time");
+        }
+
+        if (AmountOfLife != MaxAmountOfLife)
         {
             CalculateTimeDiff();
         }
@@ -91,6 +113,63 @@ public class GameManager : MonoBehaviour
 
         UpdateNums();
 
+       LoadInterstitialAd();
+        ShowInterstitialAd();
+
+    }
+
+    public void LoadInterstitialAd()
+    {
+        if(_interstitialAd != null)
+        {
+            _interstitialAd.Destroy();
+            _interstitialAd = null;
+        }
+
+        Debug.Log("Loading the interstitial ad");
+
+        var adRequest = new AdRequest();
+
+        InterstitialAd.Load(_adUnitId, adRequest,
+            (InterstitialAd ad, LoadAdError error) =>
+            {
+                if(error != null || ad == null)
+                {
+                    Debug.LogError("interstitial ad failed to load an ad " +
+                                 "with error : " + error);
+                    return;
+                }
+                Debug.Log("Interstitial ad loaded with response : "
+                        + ad.GetResponseInfo());
+
+                _interstitialAd = ad;
+            }
+            );
+    }
+
+    public void ShowInterstitialAd()
+    {
+        if (_interstitialAd != null && _interstitialAd.CanShowAd())
+        {
+            Debug.Log("Showing interstitial ad.");
+            _interstitialAd.Show();
+            timeOfLastAd = DateTime.Now;
+        }
+        else
+        {
+            Debug.LogError("Interstitial ad is not ready yet.");
+        }
+    }
+
+
+    public void CheckIfTimeToPlayAd()
+    {
+        float timeSinceLastAd = CalculateTimeDifferenceInSeconds(timeOfLastAd, DateTime.Now);
+        if (timeSinceLastAd >= 6) 
+        {
+            LoadInterstitialAd();
+            ShowInterstitialAd();
+        }
     }
 
     private void CalculateTimeDiff()
