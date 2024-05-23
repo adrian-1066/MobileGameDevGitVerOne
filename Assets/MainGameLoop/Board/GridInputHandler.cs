@@ -48,6 +48,9 @@ public class GridInputHandler : MonoBehaviour
 
     public int CurrentLevelMultiplier;
 
+    public TMP_Text Ability1AmountText;
+    public TMP_Text Ability2AmountText;
+
     void Awake()
     {
         gameBoard = GetComponent<InnitBoardSetUp>();
@@ -80,6 +83,8 @@ public class GridInputHandler : MonoBehaviour
         NumOfMoves.text = CurrentMoveNum.ToString();
         LevelCompleteScreen.SetActive(false);
         CurrentLevelMultiplier = gameManager.levelMulti;
+        Ability1AmountText.text = gameManager.AmountOfAbility1.ToString();
+        Ability2AmountText.text = gameManager.AmountOfAbility2.ToString();
 
 
 
@@ -169,8 +174,31 @@ public class GridInputHandler : MonoBehaviour
 
     public void AbilitySelection(int index)
     {
-        AbilityIndex = index;
-        AbilitySelected = true;
+        if(index == 0)
+        {
+            if(gameManager.AmountOfAbility1 >= 1)
+            {
+                AbilityIndex = index;
+                AbilitySelected = true;
+            }
+            else
+            {
+                Debug.Log("no ability 1");
+            }
+        }
+        else if(index == 1)
+        {
+            if (gameManager.AmountOfAbility2 >= 1)
+            {
+                AbilityIndex = index;
+                AbilitySelected = true;
+            }
+            else
+            {
+                Debug.Log("no ability 2");
+            }
+        }
+       
     }
 
     public void OnUseAbility(InputAction.CallbackContext context)
@@ -188,8 +216,17 @@ public class GridInputHandler : MonoBehaviour
             {
 
                 GridAbilities[AbilityIndex].UseAbility(GridSquare);
+                if(AbilityIndex == 0)
+                {
+                    gameManager.AmountOfAbility1--;
+                }
+                else if(AbilityIndex == 1)
+                {
+                    gameManager.AmountOfAbility2--;
+                }
                 //TempAbility(GridSquare);
                 AbilitySelected = false;
+                UpdateAbilityNum();
                 //use ability selected
             }
             else
@@ -197,6 +234,12 @@ public class GridInputHandler : MonoBehaviour
                 //Debug.Log("no grid square was chosen");
             }
         }
+    }
+
+    private void UpdateAbilityNum()
+    {
+        Ability1AmountText.text = gameManager.AmountOfAbility1.ToString();
+        Ability2AmountText.text = gameManager.AmountOfAbility2.ToString();
     }
     public void OnTouchMove(InputAction.CallbackContext context)
     {
@@ -240,6 +283,11 @@ public class GridInputHandler : MonoBehaviour
                     CurrentMoveNum--;
                     UpdateMoveNum();
                     MatchMadeClear();
+
+                    if(CurrentMoveNum <= 0)
+                    {
+                        LoseGame();
+                    }
                 }
                 isDragging = false;
                 selectedItem.GetComponent<Image>().color = gameBoard.ItemColours[selectedItem.GetComponent<ItemStats>().type];
@@ -248,6 +296,13 @@ public class GridInputHandler : MonoBehaviour
         }
     }
 
+
+    private void LoseGame()
+    {
+        IsLevelComplete = true;
+        gameManager.AmountOfLife--;
+        gameManager.TriggerHealthRegen();
+    }
 
     private void UpdateMoveNum()
     {

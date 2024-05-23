@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using System.Runtime.CompilerServices;
+using System;
 
 public class GameManager : MonoBehaviour
 {
@@ -38,6 +39,10 @@ public class GameManager : MonoBehaviour
 
     public int AmountOfAbility1;
     public int AmountOfAbility2;
+
+    public int AmountOfLife;
+    public int MaxAmountOfLife;
+    private DateTime dateTimeOnLogOn;
     private void Awake()
     {
         saveLoadManager = GetComponent<SaveLoadManager>();
@@ -61,6 +66,22 @@ public class GameManager : MonoBehaviour
         levelMulti = loadedData.MultiLevel;
         AmountOfAbility1 = loadedData.NumOfAbilityOne;
         AmountOfAbility2 = loadedData.NumOfAbilityTwo;
+        AmountOfLife = loadedData.NumOfLifes;
+        //dateTimeOnLogOn = loadedData.dateTimeAtLogOff;
+
+        if(DateTime.TryParse(loadedData.dateTimeAtLogOffData, out dateTimeOnLogOn))
+        {
+            Debug.Log("got the previous time, it is: " + dateTimeOnLogOn);
+        }
+        else
+        {
+            Debug.Log("failed to get date time");
+        }
+        if(AmountOfLife != MaxAmountOfLife)
+        {
+            CalculateTimeDiff();
+        }
+        
         //highestLevelReached = highScores.Count;
         foreach(float value in loadedData.LevelHighScores)
         {
@@ -72,10 +93,45 @@ public class GameManager : MonoBehaviour
 
     }
 
+    private void CalculateTimeDiff()
+    {
+        float timeDiff = CalculateTimeDifferenceInSeconds(dateTimeOnLogOn, DateTime.Now);
+        int lifeTillMax = MaxAmountOfLife - AmountOfLife;
+        int timeTillHealed = lifeTillMax * 300;
+        
+        if(timeDiff >= timeTillHealed)
+        {
+            AmountOfLife = MaxAmountOfLife;
+        }
+        else
+        {
+            int healthGain = Mathf.FloorToInt(timeDiff /300.0f);
+            AmountOfLife += healthGain;
+            if(AmountOfLife >= MaxAmountOfLife)
+            {
+                AmountOfLife = MaxAmountOfLife;
+            }
+            else if(AmountOfLife < MaxAmountOfLife)
+            {
+                StartCoroutine(beginHealthRegen());
+            }
+        }
+    }
+
+    float CalculateTimeDifferenceInSeconds(DateTime start, DateTime end)
+    {
+        // Calculate the time span between the two dates
+        TimeSpan timeSpan = end - start;
+
+        // Return the total seconds
+        return ((float)(timeSpan.TotalSeconds));
+    }
+
     public void UpdateNums()
     {
         FreeMunText.text = curFreeMoney.ToString();
         PreMunText.text = curPreMoney.ToString();
+        LifesText.text = AmountOfLife.ToString();
     }
 
     public void SetUpUpgradeShop()
@@ -148,7 +204,10 @@ public class GameManager : MonoBehaviour
             PreMoney = curPreMoney,
             MultiLevel = levelMulti,
             NumOfAbilityOne = AmountOfAbility1,
-            NumOfAbilityTwo = AmountOfAbility2
+            NumOfAbilityTwo = AmountOfAbility2,
+            dateTimeAtLogOffData = System.DateTime.Now.ToString("o"),
+            //dateTimeAtLogOff = DateTime.Now,
+            NumOfLifes = AmountOfLife
            
         };
 
@@ -185,6 +244,24 @@ public class GameManager : MonoBehaviour
         //Debug.Log("the avg framerate is: " +  avgFrameRate);
     }
 
+    private IEnumerator beginHealthRegen()
+    {
+        yield return new WaitForSeconds(300);
+        AmountOfLife++;
+        if(AmountOfLife > MaxAmountOfLife)
+        {
+            AmountOfLife = MaxAmountOfLife;
+        }
+        else if(AmountOfLife < MaxAmountOfLife)
+        {
+            StartCoroutine(beginHealthRegen());
+        }
+    }
+
+    public void TriggerHealthRegen()
+    {
+        StartCoroutine(beginHealthRegen());
+    }
     private void OnApplicationQuit()
     {
         Debug.Log("gaming quitting");

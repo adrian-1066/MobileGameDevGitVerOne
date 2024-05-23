@@ -15,6 +15,7 @@ public class SaveLoadManager : MonoBehaviour
 
     public void SaveGame(GameData data)
     {
+        //data.dateTimeAtLogOffData = System.DateTime.Now.ToString("o");
         string json = JsonUtility.ToJson(data);
         File.WriteAllText(filePath, json);
     }

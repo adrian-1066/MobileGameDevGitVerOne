@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,10 +12,15 @@ public class GameData
     public int PreMoney;
     public int NumOfAbilityOne;
     public int NumOfAbilityTwo;
+    public int NumOfLifes;
+    //public DateTime dateTimeAtLogOff;
+    public string dateTimeAtLogOffData;
     public List<int> LevelHighScores;
     public GameData()
     {
         LevelHighScores = new List<int>();
+        dateTimeAtLogOffData = System.DateTime.Now.ToString("o");
+       
         
     }
 }
