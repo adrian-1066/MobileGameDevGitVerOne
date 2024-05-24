@@ -409,6 +409,12 @@ public class GameManager : MonoBehaviour
     {
         audioManager.Play("ButtonPressed");
     }
+
+    public void BuyPreCur(int val)
+    {
+        curPreMoney += val;
+        UpdateNums();
+    }
     private void OnApplicationQuit()
     {
         Debug.Log("gaming quitting");
