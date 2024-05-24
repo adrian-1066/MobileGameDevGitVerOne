@@ -22,6 +22,7 @@ public class InnitBoardSetUp : MonoBehaviour
     public int HiddenHeight;
     public GameObject[] items; // Array of different item prefabs
     public Color[] ItemColours;
+    public List<Sprite> Fruits = new List<Sprite>();
     public GameObject[,] grid;
     public int Seed;
     public TMP_Text ScoreToReachText;
@@ -98,7 +99,7 @@ public class InnitBoardSetUp : MonoBehaviour
                 newItemStats.CurrentGridPos = new Vector2Int(x, y);
                 newItemStats.GridStartPos = new Vector2Int(x, y);
                 newItemStats.type = itemToUse;
-                newItem.GetComponent<Image>().color = ItemColours[itemToUse];
+                newItem.GetComponent<Image>().sprite = Fruits[itemToUse]; //color = ItemColours[itemToUse];
                 newItemStats.CanBeUsedInMatch = true;
                 if(y >= height)
                 {

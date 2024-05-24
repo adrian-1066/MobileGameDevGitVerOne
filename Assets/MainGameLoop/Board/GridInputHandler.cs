@@ -55,6 +55,9 @@ public class GridInputHandler : MonoBehaviour
 
     private bool isHorizontalMove;
     private bool directionSet;
+
+    
+   
     void Awake()
     {
         gameBoard = GetComponent<InnitBoardSetUp>();
@@ -308,7 +311,7 @@ public class GridInputHandler : MonoBehaviour
                     }
                 }
                 isDragging = false;
-                selectedItem.GetComponent<Image>().color = gameBoard.ItemColours[selectedItem.GetComponent<ItemStats>().type];
+                selectedItem.GetComponent<Image>().color = Color.white;//gameBoard.ItemColours[selectedItem.GetComponent<ItemStats>().type];
                 selectedItem = null;
                 isHorizontalMove = false;
                 directionSet = false; // Reset direction flag for next drag
@@ -651,8 +654,9 @@ public class GridInputHandler : MonoBehaviour
         int randNum = Random.Range(0, gameBoard.ItemColours.Length);
         itemToUpdate.GetComponent<ItemStats>().type = randNum;
         itemToUpdate.GetComponent<ItemStats>().CanBeUsedInMatch = true;
-        itemToUpdate.GetComponent<Image>().color = gameBoard.ItemColours[randNum];
-        
+        itemToUpdate.GetComponent<Image>().sprite = gameBoard.Fruits[randNum];
+        itemToUpdate.GetComponent<Image>().color = Color.white;
+
     }
 
     void MakeItemInvis(GameObject itemToUpdate)
