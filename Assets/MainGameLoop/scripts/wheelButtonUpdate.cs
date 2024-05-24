@@ -36,6 +36,10 @@ public class wheelButtonUpdate : MonoBehaviour
 
     public void OpenLevel()
     {
+        if(gameManager.AmountOfLife <= 0)
+        {
+            return;
+        }
         if (valueOnText <= gameManager.highestLevelReached + 2)
         {
             gameManager.SetSeedForGrid(valueOnText);

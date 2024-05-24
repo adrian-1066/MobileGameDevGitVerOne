@@ -387,7 +387,7 @@ public class GridInputHandler : MonoBehaviour
         ItemStats stats = item.GetComponent<ItemStats>();
         int x = stats.CurrentGridPos.x;
         int y = stats.CurrentGridPos.y;
-
+/*
         if (isHorizontalMove)
         {
             // Horizontal move
@@ -410,6 +410,27 @@ public class GridInputHandler : MonoBehaviour
                 }
                 SwapItems(x, y, x, targetY);
             }
+        }*/
+
+        int targetY = y + (direction.y > 0 ? 1 : -1);
+        int targetX = x + (direction.x > 0 ? 1 : -1);
+        if (direction.y != 0)
+        {
+
+
+            if (targetY >= 0 && targetY < gameBoard.HiddenHeight)
+            {
+                if (y < gameBoard.height && targetY >= gameBoard.height)
+                {
+                    UpdateItem(gameBoard.grid[x, targetY]);
+                    MakeItemInvis(gameBoard.grid[x, y]);
+                }
+                SwapItems(x, y, x, targetY);
+            }
+        }
+        else
+        {
+            SwapItems(x, y, targetX, y);
         }
     }
     
