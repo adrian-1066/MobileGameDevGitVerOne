@@ -5,6 +5,8 @@ using TMPro;
 using System.Runtime.CompilerServices;
 using GoogleMobileAds.Api;
 using System;
+using UnityEngine.Audio;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -46,8 +48,18 @@ public class GameManager : MonoBehaviour
     private DateTime dateTimeOnLogOn;
     private DateTime timeOfLastAd;
 
+    public AudioManager audioManager;
+    public AudioMixer audioMixer;
     
-//#if UNITY_ANDROID
+    private float Volume;
+    private bool IsMuted;
+    public Slider VolSlider;
+    public Toggle muteToggle;
+
+    public Slider InGameVolSlider;
+    public Toggle InGameMuteToggle;
+
+    //#if UNITY_ANDROID
     private string _adUnitId = "ca-app-pub-3940256099942544/1033173712";
 //#endif
 
@@ -78,10 +90,25 @@ public class GameManager : MonoBehaviour
         AmountOfAbility1 = loadedData.NumOfAbilityOne;
         AmountOfAbility2 = loadedData.NumOfAbilityTwo;
         AmountOfLife = loadedData.NumOfLifes;
+        Volume = loadedData.Volume;
+        IsMuted = loadedData.IsMuted;
+
+
+        audioMixer.SetFloat("MasterVolume", Volume);
+        if(IsMuted)
+        {
+            audioMixer.SetFloat("MasterVolume", -80.0f);
+        }
+
+        VolSlider.value = Volume;
+        muteToggle.isOn = IsMuted;
+
+        InGameVolSlider.value = Volume;
+        InGameMuteToggle.isOn = IsMuted;
         //timeOfLastAd = loadedData.TimeSinceLastAd;
         //dateTimeOnLogOn = loadedData.dateTimeAtLogOff;
 
-        if(DateTime.TryParse(loadedData.dateTimeAtLogOffData, out dateTimeOnLogOn))
+        if (DateTime.TryParse(loadedData.dateTimeAtLogOffData, out dateTimeOnLogOn))
         {
             Debug.Log("got the previous time, it is: " + dateTimeOnLogOn);
         }
@@ -115,7 +142,40 @@ public class GameManager : MonoBehaviour
         
         LoadInterstitialAd();
         ShowInterstitialAd();
+
+        audioManager.Play("BgMusic");
         
+    }
+
+    public void SetVolumeMute(bool State)
+    {
+        IsMuted = State;
+
+        if(IsMuted)
+        {
+            audioMixer.SetFloat("MasterVolume", -80.0f);
+        }
+        else
+        {
+            audioMixer.SetFloat("MasterVolume", Volume);
+        }
+        InGameMuteToggle.isOn = IsMuted;
+        muteToggle.isOn = IsMuted;
+    }
+
+    public void LoseLife()
+    {
+        AmountOfLife--;
+        UpdateNums();
+    }
+
+    public void SetVolume(float volume)
+    {
+        Volume = volume;
+        audioMixer.SetFloat("MasterVolume", Volume);
+        
+        InGameVolSlider.value = Volume;
+       VolSlider.value = Volume;    
     }
     
     public void LoadInterstitialAd()
@@ -286,7 +346,10 @@ public class GameManager : MonoBehaviour
             NumOfAbilityTwo = AmountOfAbility2,
             dateTimeAtLogOffData = System.DateTime.Now.ToString("o"),
             //dateTimeAtLogOff = DateTime.Now,
-            NumOfLifes = AmountOfLife
+            NumOfLifes = AmountOfLife,
+            IsMuted = IsMuted,
+            Volume = Volume
+            
            
         };
 
@@ -340,6 +403,11 @@ public class GameManager : MonoBehaviour
     public void TriggerHealthRegen()
     {
         StartCoroutine(beginHealthRegen());
+    }
+
+    public void PlayButtonSound()
+    {
+        audioManager.Play("ButtonPressed");
     }
     private void OnApplicationQuit()
     {

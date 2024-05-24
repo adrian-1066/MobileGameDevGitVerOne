@@ -35,7 +35,7 @@ public class SaveLoadManager : MonoBehaviour
         GameData newData;
         newData = new GameData 
         {
-            NumOfAbilityOne = 5, NumOfAbilityTwo = 5, FreeMoney = 1000, NumOfLifes = 5, PreMoney = 100, MultiLevel = 10
+            NumOfAbilityOne = 5, NumOfAbilityTwo = 5, FreeMoney = 1000, NumOfLifes = 5, PreMoney = 100, MultiLevel = 10, Volume = 0.0f, IsMuted = false
         
         };
 

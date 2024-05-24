@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
-
+//using System.Diagnostics;
 
 public class GridInputHandler : MonoBehaviour
 {
@@ -158,6 +158,11 @@ public class GridInputHandler : MonoBehaviour
                 selectedItem = GetItemAtPosition(initialTouchPosition);
                 if (selectedItem != null)
                 {
+                    if(selectedItem.GetComponent<ItemStats>().GridStartPos.y >= gameBoard.height)
+                    {
+                        selectedItem = null;
+                        return;
+                    }
                     selectedItem.GetComponent<Image>().color = Color.green;
                     isDragging = true;
                     directionSet = false;  // Reset direction flag
@@ -241,8 +246,10 @@ public class GridInputHandler : MonoBehaviour
         {
             currentTouchPosition = Touchscreen.current.position.ReadValue();
             Vector2 direction = currentTouchPosition - initialTouchPosition;
-            float dist = Vector2.Distance(initialTouchPosition, currentTouchPosition);
+            float dist = Vector2.Distance(currentTouchPosition,initialTouchPosition);
             initialTouchPosition = currentTouchPosition;
+            Debug.Log("adding dist: " + dist);
+            
             CurrentDragDist += dist;
 
             if (CurrentDragDist >= MaxDragDist)
@@ -254,7 +261,7 @@ public class GridInputHandler : MonoBehaviour
                     isHorizontalMove = Mathf.Abs(direction.x) > Mathf.Abs(direction.y);
                     directionSet = true;
                 }
-
+                Debug.Log("direction is: " + direction);
                 // Restrict movement to the determined direction
                 if (directionSet)
                 {
@@ -267,8 +274,14 @@ public class GridInputHandler : MonoBehaviour
                         direction = new Vector2(0, direction.y);
                     }
                 }
-
-                MoveItems(selectedItem, direction);
+                if ((selectedItem.GetComponent<ItemStats>().CurrentGridPos + (direction).normalized).y >= gameBoard.height)
+                {
+                    Debug.Log("trying to drag item out of range");
+                }
+                else
+                {
+                    MoveItems(selectedItem, direction);
+                }
             }
         }
     }
@@ -532,6 +545,7 @@ public class GridInputHandler : MonoBehaviour
         List<GameObject> temp = new List<GameObject>();
         temp.AddRange(ListOfItemsToMove);
         ListOfItemsToMove.Clear();
+        gameManager.audioManager.Play("MatchMade");
         StartCoroutine(IE_MoveMatch(temp));
         
     }

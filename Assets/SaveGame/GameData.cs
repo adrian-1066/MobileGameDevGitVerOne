@@ -17,6 +17,8 @@ public class GameData
     public string dateTimeAtLogOffData;
     public string TimeSinceLastAd;
     public List<int> LevelHighScores;
+    public float Volume;
+    public bool IsMuted;
     public GameData()
     {
         LevelHighScores = new List<int>();
